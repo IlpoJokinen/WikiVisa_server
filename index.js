@@ -12,7 +12,7 @@ const server = app.listen(port, () => console.log(`Example app listening on port
 const io = socket(server)
 
 io.on("connection", (socket) => {
-    console.log("socket created")
+    console.log(`socket ${socket.id} created`)
 
     socket.on("click", (data) => {
         socket.broadcast.emit("someoneClicked", data)
