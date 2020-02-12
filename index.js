@@ -13,54 +13,75 @@ const server = app.listen(port, () => console.log(`Example app listening on port
 const io = socket(server)
 app.use(cors())
 
-let ignore = ['(country)', 'Post-', 'micro', 'states']
+function getCountryChoices(countries) {
+    let promises = []
+    countries.forEach(country => { 
+        promises.push(wiki()
+            .page(country)
+            .then(page => page.info('capital'))
+            .then(capital => {
+                return capital
+            })
+        )
+    })
+    return Promise.all(promises)
+}
 
-function getQuestion() {
-    let choices = [], promises = []
-    wiki()
-    .pagesInCategory('Category:Countries in Europe')
-    .then((data) => {
-        let arr = [], countries = [];
-        data.forEach((item, i) => {
-            if(item.includes('Category:') && !item.includes(' by ') && !item.includes(' in ') && !item.includes('country') && !item.includes('Fictional')){
-                arr.push(item.split(':')[1])
+
+function getQuestionTitle(type) {
+    switch(type) {
+        case 'capital':
+            return 'Mikä on {} pääkaupunki?'
+        default:
+            return 'Question missing'
+    }
+}
+
+function getCapitalQuestion() {
+    let countries = []
+    return wiki()
+        .pagesInCategory('Category:Countries in Europe')
+        .then(data => {
+            let arr = []
+            data.forEach((item, i) => {
+                if(item.includes('Category:') && !item.includes(' by ') && !item.includes(' in ') && !item.includes('country') && !item.includes('Fictional')){
+                    arr.push(item.split(':')[1])
+                }
+            })
+            for(let i = 0; i < 4; i++) {
+                let randomIndex = Math.floor(Math.random() * arr.length) 
+                countries.push(arr[randomIndex])
+                arr.splice(randomIndex, 1)
             }
         })
-        
-        for(let i = 0; i < 4; i++) {
-            let random = Math.floor(Math.random() * arr.length) // random country
-            countries.push(arr[random])
-            arr.splice(random, 1)
-        }
-        
-        countries.forEach((country, i) => { 
-            promises.push(wiki()
-                .page(country)
-            )
-        })
-    })
-    Promise.all(promises).then((data) => {
-        console.log(data)
-        data.forEach((e, i) => {
-            e.then(page => page.info('capital'))
-            .then((capital) => {
-                choices.push(capital)
+        .then(() => getCountryChoices(countries).then(
+            choices => {
+                return {
+                    title: getQuestionTitle('capital'),
+                    choices: choices
+                }
+            }
+        ))
+}
+
+function getQuestion(type) {
+    switch(type) {
+        case 'capital':
+            return getCapitalQuestion()
+        default: 
+            console.log('No question type defined')
+    }
+}
+
+io.on("connection", (socket) => { 
+    socket.emit("dummyData", dummyData)
+    socket.on("get question", () => {
+        const question = getQuestion('capital')
+        question.then(data => {
+            io.emit("send question", {
+                question: data.title,
+                choices: data.choices
             })
         })
-        return choices
     })
-}
-    
-io.on("connection", (socket) => { 
-    
-    socket.emit("dummyData", dummyData)
-    
-    socket.on("get question", () => {
-        let choices = getQuestion()
-        io.emit("send question", {
-            question: 'Mikä on Suomen pääkaupunki',
-            choices: choices
-        })
-    })
-    
 })
