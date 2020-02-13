@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 3001
 const socket = require("socket.io")
+const dummyData = require("./players.json")
 
 app.use(express.static('./client/build'))
 
@@ -13,6 +14,7 @@ const io = socket(server)
 
 io.on("connection", (socket) => {
     console.log(`socket ${socket.id} created`)
+    socket.emit("dummyData", dummyData)
 
     socket.on("click", (data) => {
         socket.broadcast.emit("someoneClicked", data)
