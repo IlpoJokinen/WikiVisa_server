@@ -18,7 +18,6 @@ const question = getQuestion("capital")
 function getQuestion(type) {
     switch(type) {
         case 'capital':
-            console.log("1")
             return getCapitalQuestion()
         default: 
             console.log('No question type defined')
@@ -28,7 +27,6 @@ function getQuestion(type) {
 io.on("connection", (socket) => { 
     socket.emit("dummyData", dummyData)
     socket.on("get question", () => {
-        //const question = getQuestion('capital')
         console.log("question", question)
         question.then(data => {
             io.emit("send question", {

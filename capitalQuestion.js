@@ -1,26 +1,18 @@
 const wiki = require('wikijs').default
 
-
-
 function getCountryChoices(countries) {
     let promises = []
     countries.forEach(country => { 
         promises.push(wiki()
             .page(country)
             .then(page => {
-                
+                console.log(country)
                 return page.info('capital')
             })
             .then(capital => {
-                //kosovo vatica
-                console.log(country)
                 if(country === "Croatia" || country === "Switzerland") {
-                    console.log(capital)
-                    console.log(capital[1])
                     return capital[1]
                 }
-            
-                console.log(capital)
                 return capital
             })
         )
@@ -39,14 +31,13 @@ function getQuestionTitle(type) {
 }
 
 function getCapitalQuestion() {
-    console.log("2")
     let countries = []
     return wiki()
         .pagesInCategory('Category:Countries in Europe')
         .then(data => {
             let arr = []
             data.forEach((item, i) => {
-                if(item.includes('Category:') && !item.includes(' by ') && !item.includes(' in ') && !item.includes('country') && !item.includes('Fictional')){
+                if(item.includes('Category:') && !item.includes(' by ') && !item.includes(' in ') && !item.includes('country') && !item.includes('Fictional') && !item.includes("Vatican") && !item.includes("Kosovo")){
                     arr.push(item.split(':')[1])
                 }
             })
