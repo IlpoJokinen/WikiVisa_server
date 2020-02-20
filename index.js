@@ -5,6 +5,7 @@ const socket = require('socket.io')
 const players = []
 const port = process.env.PORT || 3001
 const { getCapitalQuestion } = require("./capitalQuestion")
+const games = []
 
 app.use(express.static('./client/build'))
 app.get('/', (req, res) => res.send('Hello World!'))
@@ -24,6 +25,15 @@ function getQuestion(type) {
     }
 }
 
+function createGame() {
+    games.push({startGameCounter: 2000, question: question})
+    setInterval(() => {
+        games[0] = {...games[0], startGameCounter: games[0].startGameCounter - 1}
+        io.emit("send timer", games[0].startGameCounter)
+    }, 1000)
+}
+
+
 io.on("connection", (socket) => { 
     
     socket.on("get question", () => {
@@ -36,6 +46,10 @@ io.on("connection", (socket) => {
         })
     })
     socket.on("join game", (data) => {
+        if(!games.length){
+            createGame() 
+
+        }
         console.log(data)
         players.push({
             id: socket.id,  
@@ -43,8 +57,10 @@ io.on("connection", (socket) => {
             answers: [],
             points: 200
         })
-        console.log(players)
-        socket.emit("send players", players)
+     
+        
+        io.emit("send players", players)
+        socket.emit("send game", games[0])
     })
     socket.on("get players", () => {
         console.log("here")
