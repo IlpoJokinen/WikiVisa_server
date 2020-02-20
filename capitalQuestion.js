@@ -19,10 +19,10 @@ function getCapitalChoices(countries) {
     return Promise.all(promises)
 }
 
-function getQuestionTitle(type) {
+function getQuestionTitle(type, country) {
     switch(type) {
         case 'capital':
-            return 'Mikä on {} pääkaupunki?'
+            return `What is the capital of ${country}`
         default:
             return 'Question missing'
     }
@@ -48,7 +48,7 @@ function getCapitalQuestion() {
         .then(() => getCapitalChoices(countries).then(
             choices => {
                 return {
-                    title: getQuestionTitle('capital'),
+                    title: getQuestionTitle('capital', countries[Math.floor(Math.random() * countries.length)]),
                     choices: choices
                 }
             }
