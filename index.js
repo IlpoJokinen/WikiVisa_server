@@ -26,7 +26,7 @@ function getQuestion(type) {
 }
 
 function createGame() {
-    games.push({startGameCounter: 2000, question: question})
+    games.push({startGameCounter: 20, question: question, questionCounter: 20, roundEndCounter: 20, view: "startGame"})
     setInterval(() => {
         games[0] = {...games[0], startGameCounter: games[0].startGameCounter - 1}
         io.emit("send timer", games[0].startGameCounter)
@@ -55,10 +55,9 @@ io.on("connection", (socket) => {
             id: socket.id,  
             gamertag: data.gamertag,
             answers: [],
-            points: 200
+            points: 0
         })
      
-        
         io.emit("send players", players)
         socket.emit("send game", games[0])
     })
