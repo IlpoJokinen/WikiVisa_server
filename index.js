@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const socket = require('socket.io')
-const dummyData = require('./players.json')
+const players = []
 const port = process.env.PORT || 3001
 const { getCapitalQuestion } = require("./capitalQuestion")
 
@@ -25,7 +25,7 @@ function getQuestion(type) {
 }
 
 io.on("connection", (socket) => { 
-    socket.emit("dummyData", dummyData)
+    
     socket.on("get question", () => {
         console.log("question", question)
         question.then(data => {
@@ -35,4 +35,20 @@ io.on("connection", (socket) => {
             })
         })
     })
+    socket.on("join game", (data) => {
+        console.log(data)
+        players.push({
+            id: socket.id,  
+            gamertag: data.gamertag,
+            answers: [],
+            points: 200
+        })
+        console.log(players)
+        socket.emit("send players", players)
+    })
+    socket.on("get players", () => {
+        console.log("here")
+        socket.emit("send players", players)
+    })
+    
 })

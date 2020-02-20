@@ -1,6 +1,6 @@
 const wiki = require('wikijs').default
 
-function getCountryChoices(countries) {
+function getCapitalChoices(countries) {
     let promises = []
     countries.forEach(country => { 
         promises.push(wiki()
@@ -48,7 +48,7 @@ function getCapitalQuestion() {
             }
             console.log(arr)
         })
-        .then(() => getCountryChoices(countries).then(
+        .then(() => getCapitalChoices(countries).then(
             choices => {
                 return {
                     title: getQuestionTitle('capital'),
