@@ -6,7 +6,6 @@ function getCapitalChoices(countries) {
         promises.push(wiki()
             .page(country)
             .then(page => {
-                console.log(country)
                 return page.info('capital')
             })
             .then(capital => {
@@ -19,7 +18,6 @@ function getCapitalChoices(countries) {
     })
     return Promise.all(promises)
 }
-
 
 function getQuestionTitle(type) {
     switch(type) {
@@ -46,7 +44,6 @@ function getCapitalQuestion() {
                 countries.push(arr[randomIndex])
                 arr.splice(randomIndex, 1)
             }
-            console.log(arr)
         })
         .then(() => getCapitalChoices(countries).then(
             choices => {
@@ -59,4 +56,3 @@ function getCapitalQuestion() {
 }
 
 module.exports = { getCapitalQuestion }
-
