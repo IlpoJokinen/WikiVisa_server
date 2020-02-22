@@ -2,10 +2,12 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const socket = require('socket.io')
-const players = []
 const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const games = []
+const players = []
+let game_id = 0
+let question_id = 0
 
 app.use(express.static('./client/build'))
 app.get('/', (req, res) => res.send('Hello World!'))
@@ -18,15 +20,19 @@ function createGame() {
     return new Promise((resolve, reject) => {
         const randomizeQuestion = getQuestion('capital')
         randomizeQuestion.then((question) => {
+            question.question_id = question_id
             let game = {
+                id: game_id,
                 questions: [question],
-                startGameCounter: 30,
+                startGameCounter: 5,
                 questionCounter: 20,
                 roundEndCounter: 20,
                 view: 1
             }
             startTimer(game)
             games.push(game)
+            game_id++
+            question_id++
             resolve(game)
         }).catch((error) => {
             console.log(error)
@@ -91,6 +97,39 @@ function getGame() {
     })
 }
 
+function submitAnswer(data) {
+    let player = getPlayerByGametag(data.gamertag)
+    if(player.constructor === Object) { // Player exists
+        delete data.gamertag
+        let existingAnswer = getAnswerByQuestionId(player.answers, data.question_id)
+        if(existingAnswer.constructor === Object) {
+            existingAnswer.answer = data.answer // Answer already exists, so we are going to update it
+        } else {
+            player.answers.push(data) // Create a new answer object
+        }
+    }
+}
+
+function getPlayerByGametag(gamertag) {
+    let player = false
+    players.forEach(p => {
+        if(p.gamertag === gamertag) {
+            player = p
+        }
+    })
+    return player
+}
+
+function getAnswerByQuestionId(playersAnswers, question_id) {
+    let answer = false
+    playersAnswers.forEach(a => {
+        if(a.question_id === question_id) {
+            answer = a
+        }
+    })
+    return answer
+}
+
 io.on("connection", (socket) => { 
     socket.on("join game", gamertag => {
         if(!gamertag.length) {
@@ -109,6 +148,7 @@ io.on("connection", (socket) => {
             socket.emit("send game", game)
         })
     })
+    socket.on("submit answer", data => submitAnswer(data))
     socket.on("get timer", viewIndex => {
         let timerProperty = getTimerProperty(viewIndex)
         socket.emit('send timer', {
