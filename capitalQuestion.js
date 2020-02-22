@@ -1,58 +1,74 @@
 const wiki = require('wikijs').default
 
-function getCapitalChoices(countries) {
-    let promises = []
-    countries.forEach(country => { 
-        promises.push(wiki()
-            .page(country)
-            .then(page => {
-                return page.info('capital')
-            })
-            .then(capital => {
-                if(country === "Croatia" || country === "Switzerland") {
-                    return capital[1]
-                }
-                return capital
-            })
-        )
-    })
-    return Promise.all(promises)
+function getNationalCapitalsOfCountriesTable() {
+    return wiki().page("List_of_national_capitals").then(
+        page => {
+            return page.tables()
+        }
+    )
 }
 
-function getQuestionTitle(type, country) {
+function getNationalCapitalsOfCountries() {
+    return new Promise((resolve, reject) => {
+        let gettingTable = getNationalCapitalsOfCountriesTable()
+        gettingTable.then(data => {
+            if(!data[0].length) {
+                reject("No data in National Capitals table")
+            }
+            let capitalData = cleanData(data[0]),
+                country = "",
+                choices = [],
+                randomCountryIndex = Math.floor(Math.random() * 4)
+            for(let i = 0; i < 4; i++) {
+                let randomIndex = Math.floor(Math.random() * capitalData.length),
+                    randomCountry = capitalData[randomIndex]
+                capitalData.splice(randomIndex, 1) // remove country from pool
+                if(i == randomCountryIndex) {
+                    country = randomCountry.country
+                }
+                choices.push(randomCountry.city)
+            }
+            resolve({
+                title: getQuestionTitle('capital', country),
+                choices: choices
+            })
+        })
+    })
+}
+
+function excludeOn(string) {
+    let excludeWhen = ['(', '(claimed)', 'factor'],
+        found = false
+    excludeWhen.forEach(excludedString => {
+        if(string.includes(excludedString)){
+            return true 
+        }
+    })
+    return found
+}
+
+function cleanData(data) {
+    let arr = []
+    data.forEach(capital => {
+        capital.country = capital.country.replace('}}', '')
+        capital.city = capital.city.replace('}}', '')
+        if(!excludeOn(capital.country) || !excludeOn(capital.city)) {
+            arr.push({
+                city: capital.city,
+                country: capital.country
+            })
+        } 
+    })
+    return arr
+}
+
+function getQuestionTitle(type, data) {
     switch(type) {
         case 'capital':
-            return `What is the capital of ${country}`
+            return `What is the capital of ${data}`
         default:
             return 'Question missing'
     }
 }
 
-function getCapitalQuestion() {
-    let countries = []
-    return wiki()
-        .pagesInCategory('Category:Countries in Europe')
-        .then(data => {
-            let arr = []
-            data.forEach((item, i) => {
-                if(item.includes('Category:') && !item.includes(' by ') && !item.includes(' in ') && !item.includes('country') && !item.includes('Fictional') && !item.includes("Vatican") && !item.includes("Kosovo")){
-                    arr.push(item.split(':')[1])
-                }
-            })
-            for(let i = 0; i < 4; i++) {
-                let randomIndex = Math.floor(Math.random() * arr.length) 
-                countries.push(arr[randomIndex])
-                arr.splice(randomIndex, 1)
-            }
-        })
-        .then(() => getCapitalChoices(countries).then(
-            choices => {
-                return {
-                    title: getQuestionTitle('capital', countries[Math.floor(Math.random() * countries.length)]),
-                    choices: choices
-                }
-            }
-        ))
-}
-
-module.exports = { getCapitalQuestion }
+module.exports = { getNationalCapitalsOfCountries }
