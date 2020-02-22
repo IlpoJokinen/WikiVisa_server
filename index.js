@@ -6,6 +6,7 @@ const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const games = []
 const players = []
+const correctAnswers = [] // dumb way do it, but works, {question_id, correct_answer}
 let game_id = 0
 let question_id = 0
 
@@ -21,12 +22,21 @@ function createGame() {
         const randomizeQuestion = getQuestion('capital')
         randomizeQuestion.then((question) => {
             question.question_id = question_id
+            correctAnswers.push({
+                question_id: question.question_id,
+                answer: {
+                    name: question.answer.name,
+                    value: question.answer.index
+                }
+            })
+            delete question.answer
             let game = {
                 id: game_id,
-                questions: [question],
                 startGameCounter: 5,
-                questionCounter: 20,
+                questionCounter: 5,
                 roundEndCounter: 20,
+                questions: [question],
+                currentQuestionIndex: 0, // refers to the currently shown question in array
                 view: 1
             }
             startTimer(game)
@@ -65,9 +75,23 @@ function startTimer(game) {
             updateGameViewIndex(game) // Maybe should put it somewhere else?
             clearInterval(counter)
             startTimer(game)
+        } 
+        if(game.view === 3){
+            io.emit('get correct answer', getCorrectAnswer(game))
         }
     }, 1000)
 } 
+
+function getCorrectAnswer(game) {
+    let currentQuestion = game.questions[game.currentQuestionIndex],
+        answer = false
+    correctAnswers.forEach(q => {
+        if(q.question_id === currentQuestion.question_id) {
+            answer = q.answer.name
+        }
+    })
+    return answer
+}
 
 function updateGameViewIndex(game) {
     game.view++

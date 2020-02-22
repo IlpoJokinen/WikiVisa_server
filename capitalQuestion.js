@@ -17,20 +17,24 @@ function getNationalCapitalsOfCountries() {
             }
             let capitalData = cleanData(data[0]),
                 country = "",
+                answer = {},
                 choices = [],
-                randomCountryIndex = Math.floor(Math.random() * 4)
+                randomCountryIndex = Math.floor(Math.random() * 4);
             for(let i = 0; i < 4; i++) {
                 let randomIndex = Math.floor(Math.random() * capitalData.length),
                     randomCountry = capitalData[randomIndex]
                 capitalData.splice(randomIndex, 1) // remove country from pool
                 if(i == randomCountryIndex) {
                     country = randomCountry.country
+                    answer.name = randomCountry.city
+                    answer.index = randomCountryIndex
                 }
                 choices.push(randomCountry.city)
             }
             resolve({
                 title: getQuestionTitle('capital', country),
-                choices: choices
+                choices: choices,
+                answer: answer
             })
         })
     })
