@@ -32,9 +32,9 @@ function createGame() {
             delete question.answer
             let game = {
                 id: game_id,
-                startGameCounter: 5,
-                questionCounter: 5,
-                roundEndCounter: 20,
+                startGameCounter: 15,
+                questionCounter: 15,
+                roundEndCounter: 15,
                 questions: [question],
                 currentQuestionIndex: 0, // refers to the currently shown question in array
                 view: 1
@@ -87,7 +87,7 @@ function getCorrectAnswer(game) {
         answer = false
     correctAnswers.forEach(q => {
         if(q.question_id === currentQuestion.question_id) {
-            answer = q.answer.name
+            answer = q.answer
         }
     })
     return answer
@@ -132,6 +132,7 @@ function submitAnswer(data) {
             player.answers.push(data) // Create a new answer object
         }
     }
+    io.emit("send players", players)
 }
 
 function getPlayerByGametag(gamertag) {
