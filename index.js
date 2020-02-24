@@ -6,7 +6,7 @@ const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const games = []
 const players = []
-const correctAnswers = [] // dumb way do it, but works, {question_id, correct_answer}
+const correctAnswers = []
 let game_id = 0
 let question_id = 0
 
@@ -76,11 +76,30 @@ function startTimer(game) {
             clearInterval(counter)
             startTimer(game)
         } 
-        if(game.view === 3){
-            io.emit('get correct answer', getCorrectAnswer(game))
-        }
+       
     }, 1000)
+    if(game.view === 3){
+        io.emit('get correct answer', getCorrectAnswer(game))
+    }
+    if(game.view === 4){
+        removeGame(game)
+    }
 } 
+
+function getGamesIndexInGames(game_id) {
+    let index = false
+    games.forEach((g, i) => {
+        if(g.game_id === game_id) {
+            index = i
+        }
+    })
+    return index
+}
+
+function removeGame(game){
+    let gameIndex = getGamesIndexInGames(game.game_id)
+    games.splice(gameIndex, 1)
+}
 
 function getCorrectAnswer(game) {
     let currentQuestion = game.questions[game.currentQuestionIndex],
