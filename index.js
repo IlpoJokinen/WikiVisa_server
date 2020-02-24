@@ -186,7 +186,6 @@ function getAnswerByQuestionId(playersAnswers, question_id) {
     return answer
 }
 
-
 io.on("connection", (socket) => { 
     socket.on("join game", gamertag => {
         if(gamertag.length) {

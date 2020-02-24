@@ -56,7 +56,7 @@ function cleanData(data) {
     data.forEach(capital => {
         capital.country = capital.country.replace('}}', '')
         capital.city = capital.city.replace('}}', '')
-        if(!excludeOn(capital.country) || !excludeOn(capital.city)) {
+        if(!excludeOn(capital.country) && !excludeOn(capital.city)) {
             arr.push({
                 city: capital.city,
                 country: capital.country
