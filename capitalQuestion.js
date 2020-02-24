@@ -41,11 +41,11 @@ function getNationalCapitalsOfCountries() {
 }
 
 function excludeOn(string) {
-    let excludeWhen = ['(', '(claimed)', 'factor'],
+    let excludeWhen = ['(', ')', 'none'],
         found = false
     excludeWhen.forEach(excludedString => {
         if(string.includes(excludedString)){
-            return true 
+            found = true 
         }
     })
     return found
