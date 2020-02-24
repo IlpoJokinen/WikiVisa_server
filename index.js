@@ -174,9 +174,16 @@ function getAnswerByQuestionId(playersAnswers, question_id) {
     return answer
 }
 
+
 io.on("connection", (socket) => { 
     socket.on("join game", gamertag => {
-        if(!gamertag.length) {
+        if(gamertag.length) {
+            let player = getPlayerByGametag(gamertag)
+            if(player.constructor === Object) {
+                socket.emit('gamertag taken', gamertag)
+                return false
+            }
+        } else {
             gamertag = generateGamerTag()
             socket.emit('get gamertag', gamertag)
         }
