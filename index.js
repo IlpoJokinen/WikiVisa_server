@@ -17,35 +17,45 @@ const server = app.listen(port, () => console.log(`WikiVisa app listening on por
 const io = socket(server)
 app.use(cors())
 
+function getQuestions(numberOfQuestions) {
+    let promises = []
+    for(let i = 0; i < numberOfQuestions; i++) {
+        let question = getQuestion('capital')
+        promises.push(question)
+    }
+    return Promise.all(promises)
+}
+
 function createGame() {
+    let game = {
+        id: game_id,
+        startGameCounter: 15,
+        questionCounter: 15,
+        roundEndCounter: 15,
+        questions: [],
+        currentQuestionIndex: 0, // refers to the currently shown question in array
+        view: 1
+    }
     return new Promise((resolve, reject) => {
-        const randomizeQuestion = getQuestion('capital')
-        randomizeQuestion.then((question) => {
-            question.question_id = question_id
-            correctAnswers.push({
-                question_id: question.question_id,
-                answer: {
-                    name: question.answer.name,
-                    value: question.answer.index
-                }
+        let gettingQuestions = getQuestions(3) // 3 refers to number of questions to create
+        gettingQuestions.then(questions => {
+            questions.forEach(q => {
+                q.question_id = question_id
+                correctAnswers.push({
+                    question_id: q.question_id,
+                    answer: {
+                        name: q.answer.name,
+                        value: q.answer.index
+                    }
+                })
+                delete q.answer
+                question_id++
             })
-            delete question.answer
-            let game = {
-                id: game_id,
-                startGameCounter: 15,
-                questionCounter: 15,
-                roundEndCounter: 15,
-                questions: [question],
-                currentQuestionIndex: 0, // refers to the currently shown question in array
-                view: 1
-            }
-            startTimer(game)
+            game.questions = questions
             games.push(game)
             game_id++
-            question_id++
+            startGame(game)
             resolve(game)
-        }).catch((error) => {
-            console.log(error)
         })
     })
 }
@@ -68,15 +78,26 @@ function getQuestion(type) {
     }
 }
 
+function resetTimers(game) {
+    game.questionCounter = 15
+    game.roundEndCounter = 15
+}
+
 function startTimer(game) {
     let counter = setInterval(() => {
         let currentTime = updateGameTime(game)
         if(currentTime === 0) {
-            updateGameViewIndex(game) // Maybe should put it somewhere else?
+            if(game.view === 3 && game.currentQuestionIndex != game.questions.length - 1) {
+                game.view = 2
+                updateCurrentQuestionIndex(game)
+                resetTimers(game)
+            } else {
+                game.view++    
+            }
+            updateGameViewIndex(game)  
             clearInterval(counter)
             startTimer(game)
         } 
-       
     }, 1000)
     if(game.view === 3){
         checkPointsOfTheRound(game)
@@ -86,6 +107,15 @@ function startTimer(game) {
     if(game.view === 4){
         removeGame(game)
     }
+}
+
+function updateCurrentQuestionIndex(game){
+    game.currentQuestionIndex++
+    io.emit('update question index', game.currentQuestionIndex)
+}
+
+function startGame(game) {
+    startTimer(game)
 } 
 
 function checkPointsOfTheRound(game){
@@ -125,7 +155,6 @@ function getCorrectAnswer(game) {
 }
 
 function updateGameViewIndex(game) {
-    game.view++
     io.emit('update game view', game.view)
 }
 
@@ -185,7 +214,6 @@ function getAnswerByQuestionId(playersAnswers, question_id) {
     })
     return answer
 }
-
 
 io.on("connection", (socket) => { 
     socket.on("join game", gamertag => {
