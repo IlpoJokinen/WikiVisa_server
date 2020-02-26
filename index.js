@@ -79,12 +79,24 @@ function startTimer(game) {
        
     }, 1000)
     if(game.view === 3){
+        checkPointsOfTheRound(game)
+        io.emit("send players", players)
         io.emit('get correct answer', getCorrectAnswer(game))
     }
     if(game.view === 4){
         removeGame(game)
     }
 } 
+
+function checkPointsOfTheRound(game){
+    const correctAnswerOftheRound = getCorrectAnswer(game)
+    players.map(p => {
+        let answerOfThePlayer = getAnswerByQuestionId(p.answers, game.currentQuestionIndex)
+        if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
+            p.points += 10
+        }
+    })
+}
 
 function getGamesIndexInGames(game_id) {
     let index = false
