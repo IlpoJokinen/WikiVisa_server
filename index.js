@@ -91,6 +91,7 @@ function startTimer(game) {
 function checkPointsOfTheRound(game){
     const correctAnswerOftheRound = getCorrectAnswer(game)
     players.map(p => {
+        p.ready = false
         let answerOfThePlayer = getAnswerByQuestionId(p.answers, game.currentQuestionIndex)
         if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
             p.points += 10
@@ -166,6 +167,15 @@ function submitAnswer(data) {
     io.emit("send players", players)
 }
 
+function setReady(data) {
+    let player = getPlayerByGametag(data.gamertag)
+    if(player.constructor === Object) { 
+        player.ready = data.ready
+    }
+    io.emit("send players", players)
+
+}
+
 function getPlayerByGametag(gamertag) {
     let player = false
     players.forEach(p => {
@@ -204,13 +214,15 @@ io.on("connection", (socket) => {
                 id: socket.id,  
                 gamertag: gamertag,
                 answers: [],
-                points: 0
+                points: 0,
+                ready: false
             })
             io.emit("send players", players)
             socket.emit("send game", game)
         })
     })
     socket.on("submit answer", data => submitAnswer(data))
+    socket.on("set ready", data => setReady(data))
     socket.on("get timer", viewIndex => {
         let timerProperty = getTimerProperty(viewIndex)
         socket.emit('send timer', {
