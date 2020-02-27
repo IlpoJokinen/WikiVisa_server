@@ -170,11 +170,11 @@ function submitAnswer(data) {
 function setReady(data) {
     let player = getPlayerByGametag(data.gamertag)
     if(player.constructor === Object) { 
-        player.ready = data.ready
+        player.ready = true
     }
     io.emit("send players", players)
-
 }
+
 
 function getPlayerByGametag(gamertag) {
     let player = false
