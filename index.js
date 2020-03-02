@@ -2,8 +2,13 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const socket = require('socket.io')
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const mongod = new MongoMemoryServer();
+
 const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
+const User = require('./models/Test_Schema')
 const games = []
 const players = []
 const correctAnswers = []
@@ -16,6 +21,21 @@ app.get('/', (req, res) => res.send('Hello World!'))
 const server = app.listen(port, () => console.log(`WikiVisa app listening on port ${port}!`))
 const io = socket(server)
 app.use(cors())
+
+connectToMongo()
+
+async function connectToMongo() {
+    const uri = await getUri()
+    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
+}
+async function getUri(){
+    const uri = await mongod.getUri()
+    return uri
+}
+app.get("/api", async (req, res) => {
+    const userFromDb = await User.find({})
+    res.json({userFromDb})
+})
 
 function createGame() {
     return new Promise((resolve, reject) => {
