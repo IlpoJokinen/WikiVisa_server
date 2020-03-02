@@ -9,6 +9,8 @@ const mongod = new MongoMemoryServer();
 const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const User = require('./models/Test_Schema')
+const Category = require('./models/Category')
+const Page = require('./models/Page')
 const games = []
 const players = []
 const correctAnswers = []
@@ -23,6 +25,18 @@ const io = socket(server)
 app.use(cors())
 
 connectToMongo()
+insertCategories()
+
+async function insertCategories() {
+    const categories = [{categoryName: "countries"}, {categoryName: "geography"}, {categoryName: "math"}, {categoryName: "it"}, {categoryName: "history"}, {categoryName: "persons"}, {categoryName:"sights"}]
+    Category.collection.insertMany(categories, (err) => {
+        if(err){
+            console.log(err)
+        } else {
+            console.log("many items saved")
+        }
+    })
+}
 
 async function connectToMongo() {
     const uri = await getUri()
@@ -35,6 +49,16 @@ async function getUri(){
 app.get("/api", async (req, res) => {
     const userFromDb = await User.find({})
     res.json({userFromDb})
+})
+
+app.get("/api/categories", async (req, res) => {
+    const categoriesFromDb = await Category.find({})
+    res.json({categoriesFromDb})
+})
+
+app.get("/api/page", async (req, res) => {
+    const pageFromDb = await Page.find({})
+    res.json({pageFromDb})
 })
 
 function createGame() {
