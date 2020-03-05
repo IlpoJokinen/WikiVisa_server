@@ -101,8 +101,8 @@ function startTimer(game) {
     }, 1000)
     if(game.view === 3){
         checkPointsOfTheRound(game)
-        io.emit("send players", players)
-        io.emit('get correct answer', getCorrectAnswer(game))
+        io.in(game.roomCode).emit("send players", players)
+        io.in(game.roomCode).emit('get correct answer', getCorrectAnswer(game))
     }
     if(game.view === 4){
         removeGame(game)
@@ -148,7 +148,7 @@ function getCorrectAnswer(game) {
 
 function updateGameViewIndex(game) {
     game.view++
-    io.emit('update game view', game.view)
+    io.in(game.roomCode).emit('update game view', game.view)
 }
 
 function getTimerProperty(view) {
@@ -194,7 +194,7 @@ function submitAnswer(data) {
             player.answers.push(data) // Create a new answer object
         }
     }
-    io.emit("send players", players)
+   // io.emit("send players", players) 
 }
 
 function setReady(data) {
@@ -202,7 +202,7 @@ function setReady(data) {
     if(player.constructor === Object) { 
         player.ready = true
     }
-    io.emit("send players", players)
+    io.in(player.roomCode).emit("send players", players)
 }
 
 
@@ -252,7 +252,7 @@ io.on("connection", (socket) => {
                 ready: false,
                 roomCode: game.roomCode
             })
-            io.emit("send players", players)
+            socket.emit("send players", players)
             socket.emit("send game", game)
         })
     })
@@ -278,7 +278,7 @@ io.on("connection", (socket) => {
                 ready: false,
                 roomCode: game.roomCode
             })
-            io.emit("send players", players)
+            io.in(game.roomCode).emit("send players", players)
             socket.emit("send game", game)
         }).catch(error => {
             if(error.errorId === 1){
