@@ -37,7 +37,7 @@ app.get("/api", async (req, res) => {
     res.json({userFromDb})
 })
 
-function createGame() {
+function createGame(roomCode) {
     return new Promise((resolve, reject) => {
         const randomizeQuestion = getQuestion('capital')
         randomizeQuestion.then((question) => {
@@ -52,12 +52,13 @@ function createGame() {
             delete question.answer
             let game = {
                 id: game_id,
-                startGameCounter: 15,
-                questionCounter: 15,
-                roundEndCounter: 15,
+                startGameCounter: 100,
+                questionCounter: 100,
+                roundEndCounter: 100,
                 questions: [question],
                 currentQuestionIndex: 0, // refers to the currently shown question in array
-                view: 1
+                view: 1,
+                roomCode: roomCode.length ? roomCode : generateRandomString(4)
             }
             startTimer(game)
             games.push(game)
@@ -70,13 +71,13 @@ function createGame() {
     })
 }
 
-function generateGamerTag() {
-    let gamertag = '',
+function generateRandomString(n) {
+    let string = '',
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 10; i++) {
-        gamertag += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < n; i++) {
+        string += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-   return gamertag
+   return string
 }
 
 function getQuestion(type) {
@@ -167,9 +168,18 @@ function updateGameTime(game) {
     return game[timerProperty]
 }
 
-function getGame() {
+
+function getGame(roomCode) {
     return new Promise((resolve, reject) => {
-        resolve(!games.length ? createGame() : games[0])
+        let game = games.find(g => g.roomCode === roomCode)
+        if (game === undefined) {
+            reject({
+                errorId: 1,
+                message: "this room code wasn't found"
+            })
+        } else {
+            resolve(game)
+        }
     })
 }
 
@@ -216,29 +226,64 @@ function getAnswerByQuestionId(playersAnswers, question_id) {
     return answer
 }
 
+function addPlayer(player) {
+    players.push(player)
+}
 io.on("connection", (socket) => { 
-    socket.on("join game", gamertag => {
-        if(gamertag.length) {
-            let player = getPlayerByGametag(gamertag)
+    socket.on('create game', data => {
+        if(data.gamertag.length) {
+            let player = getPlayerByGametag(data.gamertag)
             if(player.constructor === Object) {
-                socket.emit('gamertag taken', gamertag)
+                socket.emit('gamertag taken', data.gamertag)
                 return false
             }
         } else {
-            gamertag = generateGamerTag()
+            gamertag = generateRandomString(10)
             socket.emit('get gamertag', gamertag)
         }
-        let gameFound = getGame()
-        gameFound.then(game => {
-            players.push({
+        let creatingGame = createGame(data.roomCode)
+        creatingGame.then(game => {
+            socket.join(game.roomCode)
+            addPlayer({
                 id: socket.id,  
-                gamertag: gamertag,
+                gamertag: data.gamertag,
                 answers: [],
                 points: 0,
-                ready: false
+                ready: false,
+                roomCode: game.roomCode
             })
             io.emit("send players", players)
             socket.emit("send game", game)
+        })
+    })
+    socket.on("join game", data => {
+        if(data.gamertag.length) {
+            let player = getPlayerByGametag(data.gamertag)
+            if(player.constructor === Object) {
+                socket.emit('gamertag taken', data.gamertag)
+                return false
+            }
+        } else {
+            gamertag = generateRandomString(10)
+            socket.emit('get gamertag', gamertag)
+        }
+        let gameFound = getGame(data.roomCode)
+        gameFound.then(game => {
+            socket.join(game.roomCode)
+            addPlayer({
+                id: socket.id,  
+                gamertag: data.gamertag,
+                answers: [],
+                points: 0,
+                ready: false,
+                roomCode: game.roomCode
+            })
+            io.emit("send players", players)
+            socket.emit("send game", game)
+        }).catch(error => {
+            if(error.errorId === 1){
+                socket.emit("roomcode not found", error.message)
+            }
         })
     })
     socket.on("submit answer", data => submitAnswer(data))
