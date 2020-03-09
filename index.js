@@ -36,37 +36,49 @@ app.get("/api", async (req, res) => {
     res.json({userFromDb})
 })
 
+function getQuestions(numberOfQuestions) {
+    let promises = []
+    for(let i = 0; i < numberOfQuestions; i++) {
+        let question = getQuestion('capital')
+        promises.push(question)
+    }
+    return Promise.all(promises)
+}
+
 function createGame(roomCode) {
+
+    let game = {
+        id: game_id,
+        startGameCounter: 5,
+        questionCounter: 5,
+        roundEndCounter: 7,
+        questions: [],
+        currentQuestionIndex: 0, // refers to the currently shown question in array
+        view: 1,
+        players: [],
+        roomCode: roomCode.length ? roomCode : generateRandomString(4)
+    }
     return new Promise((resolve, reject) => {
-        const randomizeQuestion = getQuestion('capital')
-        randomizeQuestion.then((question) => {
-            question.question_id = question_id
-            correctAnswers.push({
-                question_id: question.question_id,
-                answer: {
-                    name: question.answer.name,
-                    value: question.answer.index
-                }
+        
+        let gettingQuestions = getQuestions(4) // 3 refers to number of questions to create
+        gettingQuestions.then(questions => {
+            questions.forEach(q => {
+                q.question_id = question_id
+                correctAnswers.push({
+                    question_id: q.question_id,
+                    answer: {
+                        name: q.answer.name,
+                        value: q.answer.index
+                    }
+                })
+                delete q.answer
+                question_id++
             })
-            delete question.answer
-            let game = {
-                id: game_id,
-                startGameCounter: 5,
-                questionCounter: 15,
-                roundEndCounter: 5,
-                questions: [question],
-                currentQuestionIndex: 0, // refers to the currently shown question in array
-                view: 1,
-                players: [],
-                roomCode: roomCode.length ? roomCode : generateRandomString(4)
-            }
-            startTimer(game)
+            game.questions = questions
             games.push(game)
             game_id++
-            question_id++
+            startGame(game)
             resolve(game)
-        }).catch((error) => {
-            console.log(error)
         })
     })
 }
@@ -99,15 +111,27 @@ function getQuestion(type) {
     }
 }
 
+function resetTimers(game) {
+    game.questionCounter = 15
+    game.roundEndCounter = 15
+    io.in(game.roomCode).emit('reset timers', {questionCounter: game.questionCounter, roundEndCounter: game.roundEndCounter})
+}
+
 function startTimer(game) {
     let counter = setInterval(() => {
         let currentTime = updateGameTime(game)
-        if(currentTime <= 0 ) {
-            updateGameViewIndex(game) // Maybe should put it somewhere else?
+        if(currentTime <= 0) {
+            if(game.view === 3 && game.currentQuestionIndex != game.questions.length - 1) {
+                game.view = 2
+                updateCurrentQuestionIndex(game)
+                resetTimers(game)
+            } else {
+                game.view++    
+            }
+            updateGameViewIndex(game)  
             clearInterval(counter)
             startTimer(game)
         } 
-       
     }, 1000)
     if(game.view === 3){
         checkPointsOfTheRound(game)
@@ -117,6 +141,15 @@ function startTimer(game) {
     if(game.view === 4){
         removeGame(game)
     }
+}
+
+function updateCurrentQuestionIndex(game){
+    game.currentQuestionIndex++
+    io.in(game.roomCode).emit('update question index', game.currentQuestionIndex)
+}
+
+function startGame(game) {
+    startTimer(game)
 } 
 
 function checkPointsOfTheRound(game){
@@ -141,6 +174,10 @@ function getGamesIndexInGames(game_id) {
     return index
 }
 
+function getGameByGameId(game_id) {
+    return games.find(g => g.id === game_id)
+}
+
 function removeGame(game){
     let gameIndex = getGamesIndexInGames(game.game_id)
     games.splice(gameIndex, 1)
@@ -158,7 +195,6 @@ function getCorrectAnswer(game) {
 }
 
 function updateGameViewIndex(game) {
-    game.view++
     io.in(game.roomCode).emit('update game view', game.view)
 }
 
@@ -253,6 +289,7 @@ function roomCodeExists(roomCode) {
 function addPlayer(player, roomCode) {
     games.find(g => g.roomCode === roomCode).players.push(player)
 }
+
 io.on("connection", (socket) => { 
     socket.on('create game', data => {
         if(!data.gamertag.length) {
@@ -313,10 +350,11 @@ io.on("connection", (socket) => {
     })
     socket.on("submit answer", data => submitAnswer(data))
     socket.on("set ready", data => setReady(data))
-    socket.on("get timer", viewIndex => {
-        let timerProperty = getTimerProperty(viewIndex)
+    socket.on("get timer", data => {
+        let game = getGameByGameId(data.game_id)
+        let timerProperty = getTimerProperty(data.viewIndex)
         socket.emit('send timer', {
-            [timerProperty]: games[0][timerProperty]
+            [timerProperty]: game[timerProperty]
         })
     })
     //tätä ei tulla enää sitten tarvitsemaan
