@@ -10,7 +10,6 @@ const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const User = require('./models/Test_Schema')
 const games = []
-const players = []
 const correctAnswers = []
 let game_id = 0
 let question_id = 0
@@ -52,12 +51,13 @@ function createGame(roomCode) {
             delete question.answer
             let game = {
                 id: game_id,
-                startGameCounter: 100,
-                questionCounter: 100,
-                roundEndCounter: 100,
+                startGameCounter: 5,
+                questionCounter: 15,
+                roundEndCounter: 5,
                 questions: [question],
                 currentQuestionIndex: 0, // refers to the currently shown question in array
                 view: 1,
+                players: [],
                 roomCode: roomCode.length ? roomCode : generateRandomString(4)
             }
             startTimer(game)
@@ -101,7 +101,7 @@ function startTimer(game) {
     }, 1000)
     if(game.view === 3){
         checkPointsOfTheRound(game)
-        io.in(game.roomCode).emit("send players", players)
+        io.in(game.roomCode).emit("send game", game)
         io.in(game.roomCode).emit('get correct answer', getCorrectAnswer(game))
     }
     if(game.view === 4){
@@ -111,6 +111,7 @@ function startTimer(game) {
 
 function checkPointsOfTheRound(game){
     const correctAnswerOftheRound = getCorrectAnswer(game)
+    let players = getPlayersOfTheRoom(game.roomCode)
     players.map(p => {
         p.ready = false
         let answerOfThePlayer = getAnswerByQuestionId(p.answers, game.currentQuestionIndex)
@@ -175,7 +176,7 @@ function getGame(roomCode) {
         if (game === undefined) {
             reject({
                 errorId: 1,
-                message: "this room code wasn't found"
+                message: `Room by the code ${roomCode} doesn't exist`
             })
         } else {
             resolve(game)
@@ -184,7 +185,7 @@ function getGame(roomCode) {
 }
 
 function submitAnswer(data) {
-    let player = getPlayerByGametag(data.gamertag)
+    let player = getPlayerByGametag(data.gamertag, data.roomCode)
     if(player.constructor === Object) { // Player exists
         delete data.gamertag
         let existingAnswer = getAnswerByQuestionId(player.answers, data.question_id)
@@ -198,16 +199,17 @@ function submitAnswer(data) {
 }
 
 function setReady(data) {
-    let player = getPlayerByGametag(data.gamertag)
-    if(player.constructor === Object) { 
+    let player = getPlayerByGametag(data.gamertag, data.roomCode)
+    let game = games.find(g => g.roomCode === data.roomCode)
+    if(player.constructor === Object && roomCodeExists(data.roomCode)) { 
         player.ready = true
+        io.in(game.roomCode).emit("send players", game.players)
     }
-    io.in(player.roomCode).emit("send players", players)
 }
 
-
-function getPlayerByGametag(gamertag) {
+function getPlayerByGametag(gamertag, roomCode) {
     let player = false
+    let players = getPlayersOfTheRoom(roomCode)
     players.forEach(p => {
         if(p.gamertag === gamertag) {
             player = p
@@ -226,20 +228,23 @@ function getAnswerByQuestionId(playersAnswers, question_id) {
     return answer
 }
 
-function addPlayer(player) {
-    players.push(player)
+function getPlayersOfTheRoom (roomCode) {
+    const game = games.find(g => g.roomCode === roomCode)
+    return game.players
+}
+
+function roomCodeExists(roomCode) {
+    return games.some(g => g.roomCode === roomCode)
+}
+
+function addPlayer(player, roomCode) {
+    games.find(g => g.roomCode === roomCode).players.push(player)
 }
 io.on("connection", (socket) => { 
     socket.on('create game', data => {
-        if(data.gamertag.length) {
-            let player = getPlayerByGametag(data.gamertag)
-            if(player.constructor === Object) {
-                socket.emit('gamertag taken', data.gamertag)
-                return false
-            }
-        } else {
-            gamertag = generateRandomString(10)
-            socket.emit('get gamertag', gamertag)
+        if(!data.gamertag.length) {
+            data.gamertag = generateRandomString(10)
+            socket.emit('send gamertag', data.gamertag)
         }
         let creatingGame = createGame(data.roomCode)
         creatingGame.then(game => {
@@ -251,25 +256,30 @@ io.on("connection", (socket) => {
                 points: 0,
                 ready: false,
                 roomCode: game.roomCode
-            })
-            socket.emit("send players", players)
-            socket.emit("send game", game)
+            }, data.roomCode)
+            io.in(game.roomCode).emit("send game", game)
         })
     })
     socket.on("join game", data => {
+        if(!roomCodeExists(data.roomCode)) {
+            socket.emit("roomcode not found", "Provide another roomcode, the one you gave doesn't exit")
+            return false
+        }
+        //verrataan gamertagia huoneen muiden pelaajien tageihin 
         if(data.gamertag.length) {
-            let player = getPlayerByGametag(data.gamertag)
-            if(player.constructor === Object) {
+            let players = getPlayersOfTheRoom(data.roomCode)
+            if(players.some(p => p.gamertag === data.gamertag)) {
                 socket.emit('gamertag taken', data.gamertag)
                 return false
             }
         } else {
-            gamertag = generateRandomString(10)
-            socket.emit('get gamertag', gamertag)
+            data.gamertag = generateRandomString(10)
+            socket.emit('send gamertag', data.gamertag)
         }
         let gameFound = getGame(data.roomCode)
         gameFound.then(game => {
             socket.join(game.roomCode)
+            //tähän myös paraetriksi funkkariin se roomCode että mihin peliin pelaaja liitetään
             addPlayer({
                 id: socket.id,  
                 gamertag: data.gamertag,
@@ -277,9 +287,11 @@ io.on("connection", (socket) => {
                 points: 0,
                 ready: false,
                 roomCode: game.roomCode
-            })
-            io.in(game.roomCode).emit("send players", players)
+            }, data.roomCode)
+            //tässä lähetetään kaikille huoneen tyypeille peli olio, jossa nyt myös pelaajat sisällä
             socket.emit("send game", game)
+            io.in(game.roomCode).emit("send players", game.players)
+            //socket.emit("send game", game)
         }).catch(error => {
             if(error.errorId === 1){
                 socket.emit("roomcode not found", error.message)
@@ -294,6 +306,7 @@ io.on("connection", (socket) => {
             [timerProperty]: games[0][timerProperty]
         })
     })
+    //tätä ei tulla enää sitten tarvitsemaan
     socket.on("get players", () => {
         socket.emit("send players", players)
     })
