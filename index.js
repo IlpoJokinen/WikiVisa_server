@@ -71,6 +71,16 @@ function createGame(roomCode) {
     })
 }
 
+function checkIfAllPlayersReady(players) {
+    let num = 0
+    players.forEach(p => {
+        if(p.ready == true){
+            num++
+        }
+    })
+    return num === players.length
+}
+
 function generateRandomString(n) {
     let string = '',
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -92,7 +102,7 @@ function getQuestion(type) {
 function startTimer(game) {
     let counter = setInterval(() => {
         let currentTime = updateGameTime(game)
-        if(currentTime === 0) {
+        if(currentTime <= 0 ) {
             updateGameViewIndex(game) // Maybe should put it somewhere else?
             clearInterval(counter)
             startTimer(game)
@@ -203,6 +213,9 @@ function setReady(data) {
     let game = games.find(g => g.roomCode === data.roomCode)
     if(player.constructor === Object && roomCodeExists(data.roomCode)) { 
         player.ready = true
+        if(checkIfAllPlayersReady(game.players)){
+            game.questionCounter = 0
+        }
         io.in(game.roomCode).emit("send players", game.players)
     }
 }
