@@ -65,7 +65,7 @@ class Question {
     }
 
     setChoices() {
-        let randomizedItems = this.getRandomItems(4)
+        let randomizedItems = this.getRandomItems(this.options.choiceCount)
         this.choices = this.filterChoices(randomizedItems)
         this.setCorrectAnswer(randomizedItems)
     }

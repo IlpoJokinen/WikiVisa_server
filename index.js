@@ -48,9 +48,9 @@ function getQuestions(numberOfQuestions) {
 function createGame(roomCode) {
     let game = {
         id: game_id,
-        startGameCounter: 30,
-        questionCounter: 5,
-        roundEndCounter: 7,
+        startGameCounter: 10,
+        questionCounter: 8,
+        roundEndCounter: 5,
         questions: [],
         currentQuestionIndex: 0, // refers to the currently shown question in array
         view: 1,
@@ -110,8 +110,8 @@ function getQuestion(type) {
 }
 
 function resetTimers(game) {
-    game.questionCounter = 15
-    game.roundEndCounter = 15
+    game.questionCounter = 8
+    game.roundEndCounter = 5
     io.in(game.roomCode).emit('reset timers', {questionCounter: game.questionCounter, roundEndCounter: game.roundEndCounter})
 }
 
