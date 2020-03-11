@@ -2,13 +2,13 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const socket = require('socket.io')
-const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongod = new MongoMemoryServer();
-
+const mongoose = require('mongoose')
+const { MongoMemoryServer } = require('mongodb-memory-server')
+const mongod = new MongoMemoryServer()
 const port = process.env.PORT || 3001
 const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const User = require('./models/Test_Schema')
+const Question = require('./classes/Question')
 const games = []
 const correctAnswers = []
 let game_id = 0
@@ -39,17 +39,16 @@ app.get("/api", async (req, res) => {
 function getQuestions(numberOfQuestions) {
     let promises = []
     for(let i = 0; i < numberOfQuestions; i++) {
-        let question = getQuestion('capital')
-        promises.push(question)
+        let question = new Question.Question('capital')
+        promises.push(question.get())
     }
     return Promise.all(promises)
 }
 
 function createGame(roomCode) {
-
     let game = {
         id: game_id,
-        startGameCounter: 5,
+        startGameCounter: 30,
         questionCounter: 5,
         roundEndCounter: 7,
         questions: [],
@@ -59,7 +58,6 @@ function createGame(roomCode) {
         roomCode: roomCode.length ? roomCode : generateRandomString(4)
     }
     return new Promise((resolve, reject) => {
-        
         let gettingQuestions = getQuestions(4) // 3 refers to number of questions to create
         gettingQuestions.then(questions => {
             questions.forEach(q => {
