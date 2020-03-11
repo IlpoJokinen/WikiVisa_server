@@ -100,15 +100,6 @@ function generateRandomString(n) {
    return string
 }
 
-function getQuestion(type) {
-    switch(type) {
-        case 'capital':
-            return getNationalCapitalsOfCountries()
-        default: 
-            throw('No question type defined')
-    }
-}
-
 function resetTimers(game) {
     game.questionCounter = 8
     game.roundEndCounter = 5
