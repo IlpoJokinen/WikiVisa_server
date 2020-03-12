@@ -119,7 +119,7 @@ class Question {
                 "choiceCount": 4 
             },
             "capital" : {
-                "choiceCount": 6
+                "choiceCount": 4
             },
         }[category]
         this.options.category = category
