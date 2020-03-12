@@ -59,6 +59,28 @@ function getCountriesWithCapitals(){
 
 }
 
+//link decoded from file md5 and country name
+function getCountriesAndFlags(){
+    let query =
+     `SELECT ?label ?flag 
+         WHERE {
+         ?ident wdt:P31 wd:Q3624078;
+             rdfs:label ?label.
+             ?ident wdt:P41 ?image.
+ 
+         BIND(REPLACE(wikibase:decodeUri(STR(?image)), "http://commons.wikimedia.org/wiki/Special:FilePath/", "") AS ?fileName)
+         BIND(REPLACE(?fileName, " ", "_") AS ?safeFileName)
+         BIND(MD5(?safeFileName) AS ?fileNameMD5)
+         BIND(CONCAT("https://upload.wikimedia.org/wikipedia/commons/", SUBSTR(?fileNameMD5, 1 , 1 ), "/", SUBSTR(?fileNameMD5, 1 , 2 ), "/", ?safeFileName) AS ?flag)
+         FILTER((LANG(?label)) = "en")
+         
+         }
+         ORDER BY ?label
+ `
+         return query;
+ }
+
+
 //Work in progress wont for some reason return periodic table column 1 elements
 // and also now return column 8 which today is purely theoretical
 function getPeriodicTable(){
