@@ -8,7 +8,8 @@ const {
 
 class Question {
 
-    constructor(category) {
+    constructor(id, category) {
+        this.id = id
         this.init(category)
     }
 
@@ -118,7 +119,7 @@ class Question {
                 "choiceCount": 4 
             },
             "capital" : {
-                "choiceCount": 4
+                "choiceCount": 6
             },
         }[category]
         this.options.category = category
@@ -133,9 +134,8 @@ class Question {
                     this.removeUnusedAttributes()
                     res(this)
                 }
-            }, 1000)
+            }, 100)
         })
     }
 }
-
-module.exports = { Question }
+module.exports = {Question}

@@ -6,9 +6,8 @@ const mongoose = require('mongoose')
 const { MongoMemoryServer } = require('mongodb-memory-server')
 const mongod = new MongoMemoryServer()
 const port = process.env.PORT || 3001
-const { getNationalCapitalsOfCountries } = require("./capitalQuestion")
 const User = require('./models/Test_Schema')
-const Question = require('./classes/Question')
+const {Game} = require('./classes/Game')
 const games = []
 const correctAnswers = []
 let game_id = 0
@@ -35,44 +34,17 @@ app.get("/api", async (req, res) => {
     const userFromDb = await User.find({})
     res.json({userFromDb})
 })
+let game = new Game(game_id, 'roomCode')
 
-function getQuestions(numberOfQuestions) {
-    let promises = []
-    for(let i = 0; i < numberOfQuestions; i++) {
-        let question = new Question.Question('capital')
-        promises.push(question.get())
-    }
-    return Promise.all(promises)
-}
+game.get().then(data => console.log(data))
 
 function createGame(roomCode) {
-    let game = {
-        id: game_id,
-        startGameCounter: 10,
-        questionCounter: 8,
-        roundEndCounter: 5,
-        questions: [],
-        currentQuestionIndex: 0, // refers to the currently shown question in array
-        view: 1,
-        players: [],
-        roomCode: roomCode.length ? roomCode : generateRandomString(4)
-    }
+    roomCode = roomCode.length ? roomCode : generateRandomString(4)
+    let game = new Game(game_id, roomCode)
+
     return new Promise((resolve, reject) => {
         let gettingQuestions = getQuestions(4) // 3 refers to number of questions to create
         gettingQuestions.then(questions => {
-            questions.forEach(q => {
-                q.question_id = question_id
-                correctAnswers.push({
-                    question_id: q.question_id,
-                    answer: {
-                        name: q.answer.name,
-                        value: q.answer.index
-                    }
-                })
-                delete q.answer
-                question_id++
-            })
-            game.questions = questions
             games.push(game)
             game_id++
             startGame(game)
