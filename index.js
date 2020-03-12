@@ -252,7 +252,12 @@ function setReady(data) {
         if(checkIfAllPlayersReady(game.players)){
             game.questionCounter = 0
         }
-        io.in(game.roomCode).emit("send players", game.players)
+        const playersWithoutAnswers = game.players.map(p => {
+            const { answers, ...rest } = p 
+            rest.answers = []
+            return rest
+        })
+        io.in(game.roomCode).emit("send players", playersWithoutAnswers)
     }
 }
 
