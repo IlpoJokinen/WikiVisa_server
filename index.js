@@ -114,7 +114,7 @@ io.on("connection", (socket) => {
                 roomCode: game.roomCode
             })
             game.startGame()
-            socket.emit("send game", game)
+            socket.emit("send game", game.gameWithoutCorrectAnswers())
         })
     })
 
@@ -146,7 +146,7 @@ io.on("connection", (socket) => {
             ready: false,
             roomCode: game.roomCode
         })
-        socket.emit("send game", game)
+        socket.emit("send game", game.gameWithoutCorrectAnswers())
         io.in(game.roomCode).emit("send players", game.players)
         /*
         let gameFound = getGame(data.roomCode)

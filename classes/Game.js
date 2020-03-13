@@ -50,7 +50,7 @@ module.exports = (io) => class Game {
         }, 1000)
         if(this.view === 3){
             this.checkPointsOfTheRound()
-            io.in(this.roomCode).emit("send game", this)
+            io.in(this.roomCode).emit("send game", this.gameWithoutCorrectAnswers())
             let correctAnswer = this.getCorrectAnswer()
             io.in(this.roomCode).emit('get correct answer', correctAnswer)
         }
@@ -82,7 +82,13 @@ module.exports = (io) => class Game {
     }
 
     resetTimers() {
-        //jos tässä muuttaa esim roundEndCounteria niin tulee errorii frontin puolella, en tajuu. Se toimii vaan jos siinä on sama luku kuin konstruktoriin on laitettu
+        //eli siis tää homma näyttäis menevän sillai et questionCounteria voi tässä mielinmäärin muokkailla 
+        //sen sijaan roundEndCounteria ei voi laittaa pienempään arvoon ku mitä tuolla konstruktorissa on laitettu
+        //liittynee siihen että frontissa se view on vielä 3 siinä vaiheessa kun tää tehdään
+        //tää nyt tietty ongelma vaan jos halutaan että tota voi muuttaa pienemmäks
+        //sitte tosiaan index.js:ssä on siellä lopussa semmonen käyttämätön socket kuuntelija, 
+        //se emittaus ("get timer") mitä se kuuntelee ei ikinä lähde frontista
+        //en vielä poistanut ku en ollut varma oisko sille kuitenkin käyttöä vielä
         this.questionCounter = 15
         this.roundEndCounter = 15
         io.in(this.roomCode).emit('reset timers', {questionCounter: this.questionCounter, roundEndCounter: this.roundEndCounter})
@@ -203,6 +209,11 @@ module.exports = (io) => class Game {
             const playersWithoutAnswers = this.playersWithoutAnswers()
             io.in(this.roomCode).emit("send players", playersWithoutAnswers)
         }
+    }
+
+    gameWithoutCorrectAnswers() {
+        const { correctAnswers, ...rest } = this
+        return rest
     }
     
     /*removeUnusedAttributes() {
