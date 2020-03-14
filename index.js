@@ -36,7 +36,7 @@ app.get("/api", async (req, res) => {
 
 function createGame(roomCode) {
     roomCode = roomCode.length ? roomCode : generateRandomString(4)
-    let game = new Game(game_id, roomCode)
+    let game = new Game(game_id, roomCode, ['capital', 'officialLanguage'], 5)
     game_id++
     
     return new Promise((resolve, reject) => {

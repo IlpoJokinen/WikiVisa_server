@@ -1,13 +1,16 @@
 const {Question} = require('./Question')
+const defaultTimers = [10, 10, 10]
 
 module.exports = (io) => class Game {
 
-    constructor(game_id, roomCode) {
+    constructor(game_id, roomCode, categories, numberOfQuestions) {
         this.id = game_id
         this.roomCode = roomCode
         this.startGameCounter = 15
         this.questionCounter = 15
         this.roundEndCounter = 15
+        this.numberOfQuestions= numberOfQuestions
+        this.categories = categories
         this.questions = []
         this.currentQuestionIndex = 0
         this.view = 1
@@ -18,7 +21,7 @@ module.exports = (io) => class Game {
     }
 
     init() {
-        this.getQuestions(3).then(questions => {
+        this.getQuestions().then(questions => {
             questions.forEach(question => {
                 this.setCorrectAnswer(question)
                 delete question.answer
@@ -100,13 +103,21 @@ module.exports = (io) => class Game {
             }
         })
     }
-    getQuestions(numberOfQuestions) {
+    getQuestions() {
         let promises = []
-        for(let i = 0; i < numberOfQuestions; i++) {
-            let question = new Question(i, 'capital')
+        for(let i = 0; i < this.numberOfQuestions; i++) {
+            let category = this.getNextCategory(i)
+            let question = new Question(i, category)
+          
             promises.push(question.get())
         }
         return Promise.all(promises)
+    }
+
+    getNextCategory(i) {
+        let randomIndex = Math.floor(Math.random() * this.categories.length),
+        randomCategory = this.categories[randomIndex]
+        return randomCategory
     }
 
     checkPointsOfTheRound(){
