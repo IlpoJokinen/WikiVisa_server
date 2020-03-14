@@ -118,8 +118,6 @@ io.on("connection", (socket) => {
         })
     })
 
-    //eikös tämän join gamen vois nyt rakentaa ihan ilman promisejakin kun se peli 
-    //on pakostakin joko luotu tai sitten sitä ei ole eikä luoda vaan kysytään käyttäjältä uuttaa roomCodea
     socket.on("join game", data => {
         if(!roomCodeExists(data.roomCode)) {
             socket.emit("roomcode not found", "Provide another roomcode, the one you gave doesn't exit")
@@ -148,31 +146,10 @@ io.on("connection", (socket) => {
         })
         socket.emit("send game", game.gameWithoutCorrectAnswers())
         io.in(game.roomCode).emit("send players", game.players)
-        /*
-        let gameFound = getGame(data.roomCode)
-        gameFound.then(game => {
-            socket.join(game.roomCode)
-            game.addPlayer({
-                id: socket.id,  
-                gamertag: data.gamertag,
-                answers: [],
-                points: 0,
-                ready: false,
-                roomCode: game.roomCode
-            })
-            //tässä lähetetään kaikille huoneen tyypeille peli olio, jossa nyt myös pelaajat sisällä
-            socket.emit("send game", game)
-            io.in(game.roomCode).emit("send players", game.players)
-        }).catch(error => {
-            if(error.errorId === 1){
-                socket.emit("roomcode not found", error.message)
-            }
-        })*/
     })
     socket.on("submit answer", data => submitAnswer(data))
     socket.on("set ready", data => setReady(data))
     socket.on("get timer", data => {
-        console.log("here",data.game_id)
         let game = getGameByGameId(data.game_id)
         let timerProperty = game.getTimerProperty(data.viewIndex)
         socket.emit('send timer', {

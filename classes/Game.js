@@ -82,13 +82,6 @@ module.exports = (io) => class Game {
     }
 
     resetTimers() {
-        //eli siis tää homma näyttäis menevän sillai et questionCounteria voi tässä mielinmäärin muokkailla 
-        //sen sijaan roundEndCounteria ei voi laittaa pienempään arvoon ku mitä tuolla konstruktorissa on laitettu
-        //liittynee siihen että frontissa se view on vielä 3 siinä vaiheessa kun tää tehdään
-        //tää nyt tietty ongelma vaan jos halutaan että tota voi muuttaa pienemmäks
-        //sitte tosiaan index.js:ssä on siellä lopussa semmonen käyttämätön socket kuuntelija, 
-        //se emittaus ("get timer") mitä se kuuntelee ei ikinä lähde frontista
-        //en vielä poistanut ku en ollut varma oisko sille kuitenkin käyttöä vielä
         this.questionCounter = 15
         this.roundEndCounter = 15
         io.in(this.roomCode).emit('reset timers', {questionCounter: this.questionCounter, roundEndCounter: this.roundEndCounter})
@@ -185,14 +178,8 @@ module.exports = (io) => class Game {
         }
     }
 
-    checkIfAllPlayersReady(players) {
-        let num = 0
-        players.forEach(p => {
-            if(p.ready == true){
-                num++
-            }
-        })
-        return num === players.length
+    checkIfAllPlayersReady() {
+        return this.players.filter(p => p.ready).length === this.players.length
     }
 
     playersWithoutAnswers() {
@@ -203,7 +190,7 @@ module.exports = (io) => class Game {
         let player = this.getPlayerByGametag(data.gamertag, data.roomCode)
         if(player.constructor === Object) { 
             player.ready = true
-            if(this.checkIfAllPlayersReady(this.players)){
+            if(this.checkIfAllPlayersReady()){
                 this.questionCounter = 0
             }
             const playersWithoutAnswers = this.playersWithoutAnswers()
