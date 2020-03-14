@@ -1,62 +1,38 @@
-
-function getUsStates() {
-    let query = 
-    `# Us States
-    SELECT ?stateLabel
-    WHERE
-    {
-    
-    ?state wdt:P31 wd:Q35657 .
-    SERVICE wikibase:label {
-    bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
-    }
-    }  
-    `
-
-    return query;
+function getUsStates() {    
+    return `SELECT ?stateLabel WHERE {
+        ?state wdt:P31 wd:Q35657 .
+        SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
+        }
+    }`
 }
 
 //Note return countries several times if country has several official lannguages i.e Finland return Finnish and Swedish
 function getCountriesWithOfficialLanguages(){
-    let query = 
-    `   #Countries and their official languages
-        SELECT DISTINCT ?countryLabel ?officialLanguageLabel
-        WHERE
-        {
-        ?country wdt:P31 wd:Q3624078 .
-        FILTER NOT EXISTS {?country wdt:P31 wd:Q3024240} #filter former country
-        FILTER NOT EXISTS {?country wdt:P31 wd:Q28171280} #filter ancient civilisation
-        OPTIONAL { ?country wdt:P37 ?officialLanguage } 
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
-        }
-        ORDER BY ?countryLabel 
-    `
-
-    return query;
-
-
+    //filter former country
+    //filter ancient civilisation
+    return `SELECT DISTINCT ?countryLabel ?officialLanguageLabel WHERE {
+        ?country wdt:P31 wd:Q3624078 . 
+        FILTER NOT EXISTS {?country wdt:P31 wd:Q3024240} 
+        FILTER NOT EXISTS {?country wdt:P31 wd:Q28171280} 
+        OPTIONAL {?country wdt:P37 ?officialLanguage} 
+            SERVICE wikibase:label {bd:serviceParam wikibase:language "en"}
+        } ORDER BY ?countryLabel`
 }
 
-
 function getCountriesWithCapitals(){
-    let query = 
-    `#Countries and their Capital city
-    SELECT DISTINCT ?countryLabel ?capitalLabel
-    WHERE
-    {
-      ?country wdt:P31 wd:Q3624078 .
-      FILTER NOT EXISTS {?country wdt:P31 wd:Q3024240} #filter former country
-      FILTER NOT EXISTS {?country wdt:P31 wd:Q28171280} #filter ancient civilisation
-      FILTER NOT EXISTS {?capital wdt:P31 wd:capital} #filter countries with no capital
-      OPTIONAL { ?country wdt:P36 ?capital } .
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+    //filter former country
+    //filter ancient civilisation
+    //filter countries with no capital
+    return `SELECT DISTINCT ?countryLabel ?capitalLabel WHERE {
+        ?country wdt:P31 wd:Q3624078 .
+        FILTER NOT EXISTS {?country wdt:P31 wd:Q3024240} 
+        FILTER NOT EXISTS {?country wdt:P31 wd:Q28171280} 
+        FILTER NOT EXISTS {?capital wdt:P31 wd:capital}
+        OPTIONAL { ?country wdt:P36 ?capital } .
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
     }
-    ORDER BY ?countryLabel 
-    `
-
-    return query;
-
-
+    ORDER BY ?countryLabel`
 }
 
 //link decoded from file md5 and country name
@@ -107,3 +83,8 @@ function getPeriodicTable(){
     return query; 
 }
     
+module.exports = { 
+    getUsStates,
+    getCountriesWithOfficialLanguages,
+    getCountriesWithCapitals 
+}
