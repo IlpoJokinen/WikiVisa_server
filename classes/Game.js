@@ -49,8 +49,8 @@ module.exports = (io) => class Game {
             let currentTime = this.updateGameTime()
             if(currentTime <= 0) {
                 if(this.view === 3 && this.currentQuestionIndex != this.questions.length - 1) {
-                    this.view = 2
-                    this.updateCurrentQuestionIndex()
+                    this.view = 2 
+                    this.currentQuestionIndex++
                     this.resetTimers()
                 } else {
                     this.view++    
@@ -62,7 +62,7 @@ module.exports = (io) => class Game {
         }, 1000)
         if(this.view === 3){
             this.checkPointsOfTheRound()
-            io.in(this.roomCode).emit("send game", this.gameWithoutCorrectAnswers())
+            io.in(this.roomCode).emit("send players", this.players)
             let correctAnswer = this.getCorrectAnswer()
             io.in(this.roomCode).emit('get correct answer', correctAnswer)
         }
@@ -87,11 +87,6 @@ module.exports = (io) => class Game {
                 return 'roundEndCounter'
         }
     }
-    
-    updateCurrentQuestionIndex(){
-        this.currentQuestionIndex++
-        io.in(this.roomCode).emit('update question index', this.currentQuestionIndex)
-    }
 
     resetTimers() {
         this.questionCounter = this.defaults.counters.questionCounter
@@ -100,9 +95,18 @@ module.exports = (io) => class Game {
     }
 
     updateGameViewIndexForClients() {
+        if(this.view === 2){
+            this.sendNextQuestion()
+        }
+
         io.in(this.roomCode).emit('update game view', this.view)
     }
     
+    sendNextQuestion(){
+        let nextQuestion = this.questions[this.currentQuestionIndex]
+        io.in(this.roomCode).emit("send question", nextQuestion)
+    }
+
     setCorrectAnswer(question) {
         this.correctAnswers.push({
             question_id: question.id,
@@ -217,9 +221,15 @@ module.exports = (io) => class Game {
         }
     }
 
-    gameWithoutCorrectAnswers() {
-        const { correctAnswers, ...rest } = this
-        return rest
+    gameWithoutCertainAttributes() {
+        function jsonCopy(src) {
+            return JSON.parse(JSON.stringify(src));
+        }
+        let copyOfThis = jsonCopy(this)
+        for(let i = 0; i < arguments.length; i++){
+            delete copyOfThis[arguments[i]]
+        }
+        return copyOfThis
     }
 
     get() {

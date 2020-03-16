@@ -114,7 +114,7 @@ io.on("connection", (socket) => {
                 roomCode: game.roomCode
             })
             game.startGame()
-            socket.emit("send game", game.gameWithoutCorrectAnswers())
+            socket.emit("send game", game.gameWithoutCertainAttributes("correctAnswers", "questions"))
         })
     })
 
@@ -144,7 +144,7 @@ io.on("connection", (socket) => {
             ready: false,
             roomCode: game.roomCode
         })
-        socket.emit("send game", game.gameWithoutCorrectAnswers())
+        socket.emit("send game", game.gameWithoutCertainAttributes("correctAnswers", "questions"))
         io.in(game.roomCode).emit("send players", game.players)
     })
     socket.on("submit answer", data => submitAnswer(data))
