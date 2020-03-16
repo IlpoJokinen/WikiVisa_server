@@ -120,10 +120,14 @@ io.on("connection", (socket) => {
 
     socket.on("join game", data => {
         if(!roomCodeExists(data.roomCode)) {
-            socket.emit("roomcode not found", "Provide another roomcode, the one you gave doesn't exit")
+            socket.emit("error while joining", "Provide another roomcode, the one you gave doesn't exit")
             return false
         }
         let game = getGameByRoomCode(data.roomCode)
+        if(game.view !== 1){
+            socket.emit("error while joining", "Game with the provided room code already started. Provide another room code")
+            return false
+        }
         //verrataan gamertagia huoneen muiden pelaajien tageihin 
         if(data.gamertag.length) {
             let players = game.players
