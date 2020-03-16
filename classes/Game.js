@@ -14,11 +14,13 @@ module.exports = (io) => class Game {
             counters: {
                 questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
                 roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
-            }
+            }, 
+            visibility: properties.visibility.public ? true : false
         }
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
         this.numberOfQuestions= this.defaults.question.count
+        this.visibility = this.defaults.visibility
         this.categories =  this.defaults.question.categories
         this.questions = []
         this.currentQuestionIndex = 0
@@ -28,7 +30,6 @@ module.exports = (io) => class Game {
         this.ready = false
         this.init()
     }
-
     init() {
         this.getQuestions().then(questions => {
             questions.forEach(question => {
