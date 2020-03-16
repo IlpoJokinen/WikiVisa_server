@@ -34,13 +34,13 @@ app.get("/api", async (req, res) => {
     res.json({userFromDb})
 })
 
-function createGame(roomCode) {
-    roomCode = roomCode.length ? roomCode : generateRandomString(4)
-    let game = new Game(game_id, roomCode, ['capital', 'officialLanguage'], 5)
-    game_id++
-    
+function createGame(roomCode, properties) {
+    properties.id = game_id
+    properties.roomCode = roomCode.length ? roomCode : generateRandomString(4)
+    let game = new Game(properties)
     return new Promise((resolve, reject) => {
-            resolve(game.get())
+        game_id++
+        resolve(game.get())
     })
 }
 
@@ -101,7 +101,7 @@ io.on("connection", (socket) => {
             data.gamertag = generateRandomString(10)
             socket.emit('send gamertag', data.gamertag)
         }
-        let creatingGame = createGame(data.roomCode)
+        let creatingGame = createGame(data.roomCode, data.gameProperties)
         creatingGame.then(game => {
             games.push(game)
             socket.join(game.roomCode)

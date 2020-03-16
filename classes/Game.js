@@ -1,16 +1,25 @@
 const {Question} = require('./Question')
-const defaultTimers = [10, 10, 10]
 
 module.exports = (io) => class Game {
 
-    constructor(game_id, roomCode, categories, numberOfQuestions) {
-        this.id = game_id
-        this.roomCode = roomCode
+    constructor(properties) {
+        this.id = properties.id
+        this.roomCode = properties.roomCode
         this.startGameCounter = 15
-        this.questionCounter = 15
-        this.roundEndCounter = 15
-        this.numberOfQuestions= numberOfQuestions
-        this.categories = categories
+        this.defaults = {
+            question: {
+                categories: properties.question.categories.length ? properties.question.categories : ['capital'],
+                count: properties.question.count.length ? properties.question.count : 5,
+            }, 
+            counters: {
+                questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
+                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
+            }
+        }
+        this.questionCounter = this.defaults.counters.questionCounter
+        this.roundEndCounter = this.defaults.counters.roundEndCounter
+        this.numberOfQuestions= this.defaults.question.count
+        this.categories =  this.defaults.question.categories
         this.questions = []
         this.currentQuestionIndex = 0
         this.view = 1
@@ -85,8 +94,8 @@ module.exports = (io) => class Game {
     }
 
     resetTimers() {
-        this.questionCounter = 15
-        this.roundEndCounter = 15
+        this.questionCounter = this.defaults.counters.questionCounter
+        this.roundEndCounter = this.defaults.counters.roundEndCounter
         io.in(this.roomCode).emit('reset timers', {questionCounter: this.questionCounter, roundEndCounter: this.roundEndCounter})
     }
 
@@ -108,7 +117,6 @@ module.exports = (io) => class Game {
         for(let i = 0; i < this.numberOfQuestions; i++) {
             let category = this.getNextCategory(i)
             let question = new Question(i, category)
-          
             promises.push(question.get())
         }
         return Promise.all(promises)
@@ -213,17 +221,12 @@ module.exports = (io) => class Game {
         const { correctAnswers, ...rest } = this
         return rest
     }
-    
-    /*removeUnusedAttributes() {
-        delete this.options
-        delete this.filteredData
-    }*/
+
     get() {
         return new Promise((res, rej) => {
             let counter = setInterval(() => {
                 if(this.ready) {
                     clearInterval(counter)
-                  //  this.removeUnusedAttributes()
                     res(this)
                 }
             }, 100)
