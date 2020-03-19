@@ -95,6 +95,11 @@ class Question {
             let randomIndex = Math.floor(Math.random() * this.filteredData.length),
                 randomItem = this.filteredData[randomIndex];
             this.filteredData.splice(randomIndex, 1)
+            let choices = randomItems.map(i => i[1])
+            if(choices.includes(randomItem[1])){
+                i--
+                continue;
+            }
             randomItems.push(randomItem)
         }
         return randomItems
