@@ -13,7 +13,7 @@ module.exports = (io) => class Game {
             }, 
             counters: {
                 questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
-                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
+                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 5
             }, 
             visibility: properties.visibility.public ? true : false
         }
@@ -27,18 +27,22 @@ module.exports = (io) => class Game {
         this.view = 1
         this.players = []
         this.correctAnswers = []
+        this.questionsCreated = 0
         this.ready = false
         this.init()
     }
     init() {
-        this.getQuestions().then(questions => {
-            questions.forEach(question => {
-                this.setCorrectAnswer(question)
-                delete question.answer
-            })
-            this.questions = questions
+        this.getQuestion().then(question => {
+            this.setCorrectAnswer(question)
+            delete question.answer
+            this.questions.push(question)
             this.ready = true
         })
+        setTimeout(() => {
+            if(this.questionsCreated != this.numberOfQuestions){
+                this.init()
+            }
+        }, 1000)
     }
 
     startGame() {
@@ -117,17 +121,14 @@ module.exports = (io) => class Game {
             }
         })
     }
-    getQuestions() {
-        let promises = []
-        for(let i = 0; i < this.numberOfQuestions; i++) {
-            let category = this.getNextCategory(i)
-            let question = new Question(i, category)
-            promises.push(question.get())
-        }
-        return Promise.all(promises)
+    getQuestion() {
+        let category = this.getNextCategory()
+        let question = new Question(this.questionsCreated, category)
+        this.questionsCreated++
+        return question.get()
     }
 
-    getNextCategory(i) {
+    getNextCategory() {
         let randomIndex = Math.floor(Math.random() * this.categories.length),
         randomCategory = this.categories[randomIndex]
         return randomCategory
