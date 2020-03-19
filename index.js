@@ -7,6 +7,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server')
 const mongod = new MongoMemoryServer()
 const port = process.env.PORT || 3001
 const User = require('./models/Test_Schema')
+const utils = require('./Utilities')
 const games = []
 let game_id = 0
 
@@ -36,21 +37,12 @@ app.get("/api", async (req, res) => {
 
 function createGame(roomCode, properties) {
     properties.id = game_id
-    properties.roomCode = roomCode.length ? roomCode : generateRandomString(4)
+    properties.roomCode = roomCode.length ? roomCode : utils.generateRandomString(4)
     let game = new Game(properties)
     return new Promise((resolve, reject) => {
         game_id++
         resolve(game.get())
     })
-}
-
-function generateRandomString(n) {
-    let string = '',
-        chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < n; i++) {
-        string += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-   return string
 }
 
 //tästä en tiiä
@@ -98,7 +90,7 @@ function getGameByRoomCode(roomCode){
 io.on("connection", (socket) => { 
     socket.on('create game', data => {
         if(!data.gamertag.length) {
-            data.gamertag = generateRandomString(10)
+            data.gamertag = utils.generateRandomString(10)
             socket.emit('send gamertag', data.gamertag)
         }
         let creatingGame = createGame(data.roomCode, data.gameProperties)
@@ -136,7 +128,7 @@ io.on("connection", (socket) => {
                 return false
             }
         } else {
-            data.gamertag = generateRandomString(10)
+            data.gamertag = utils.generateRandomString(10)
             socket.emit('send gamertag', data.gamertag)
         }
         socket.join(game.roomCode)
