@@ -35,6 +35,22 @@ function getCountriesWithCapitals(){
     ORDER BY ?countryLabel`
 }
 
+//country area in km2 
+function getCountriesArea (){
+ 
+    return `SELECT DISTINCT ?countryLabel ?area WHERE {
+        ?country wdt:P31 wd:Q3624078.
+        FILTER(NOT EXISTS { ?country wdt:P31 wd:Q3024240. })
+        FILTER(NOT EXISTS { ?country wdt:P31 wd:Q28171280. })
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+        OPTIONAL { ?country wdt:P2046 ?area. }
+      }
+      ORDER BY (?countryLabel)
+
+    `
+
+}
+
 //link decoded from file md5 and country name
 function getCountriesAndFlags(){
     let query =
@@ -55,7 +71,20 @@ function getCountriesAndFlags(){
  `
          return query;
  }
-
+// All planets in our solar system
+ function getPlanets(){
+     return  `SELECT DISTINCT ?itemLabel WITH {
+        SELECT ?class ?item {
+          ?class wdt:P279* wd:Q17362350 .
+          ?item wdt:P31 ?class .
+        }
+      } AS %items WHERE { 
+        INCLUDE %items .
+        SERVICE wikibase:label {
+          bd:serviceParam wikibase:language "en"
+        }
+      } `
+ }
 
 //Work in progress wont for some reason return periodic table column 1 elements
 // and also now return column 8 which today is purely theoretical
