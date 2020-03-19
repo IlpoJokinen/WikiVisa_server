@@ -1,4 +1,6 @@
 const fetch = require("node-fetch");
+const NodeCache = require( "node-cache" );
+const nodeCache = new NodeCache();
 
 const { 
     getUsStates,
@@ -16,11 +18,19 @@ class Question {
     init(category) {
         this.setOptions(category)
         this.setQuestionTitle()
-        this.fetchData(this.options.query).then(data => {
-            this.filterData(data)
+        if(nodeCache.has(category)){
+            let dataInCache = nodeCache.get(category)
+            this.filteredData = dataInCache
             this.setChoices()
             this.options.ready = true
-        })
+        } else {
+            this.fetchData(this.options.query).then(data => {
+                this.filterData(data)
+                nodeCache.set(category, this.filteredData)
+                this.setChoices()
+                this.options.ready = true
+            })
+        }
     }
 
     fetchData(sql) {
