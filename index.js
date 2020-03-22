@@ -87,12 +87,21 @@ function getGameByRoomCode(roomCode){
     return games.find(g => g.roomCode === roomCode)
 }
 
+function startGame(game_id, socket_id){
+    const game = getGameByGameId(game_id)
+    if(game.gameCreator === socket_id) {
+        game.startGame()
+    }
+    return false
+}
+
 io.on("connection", (socket) => { 
     socket.on('create game', data => {
         if(!data.gamertag.length) {
             data.gamertag = utils.generateRandomString(10)
             socket.emit('send gamertag', data.gamertag)
         }
+        data.gameProperties.gameCreator = socket.id
         let creatingGame = createGame(data.roomCode, data.gameProperties)
         creatingGame.then(game => {
             games.push(game)
@@ -105,8 +114,7 @@ io.on("connection", (socket) => {
                 ready: false,
                 roomCode: game.roomCode
             })
-            game.startGame()
-            socket.emit("send game", game.gameWithoutCertainAttributes("correctAnswers", "questions"))
+            socket.emit("send game", {...game.gameWithoutCertainAttributes("correctAnswers", "questions"), creator: true})
         })
     })
 
@@ -151,6 +159,9 @@ io.on("connection", (socket) => {
         socket.emit('send timer', {
             [timerProperty]: game[timerProperty]
         })
+    })
+    socket.on("start game", data => {
+        startGame(data.game_id, socket.id)
     })
 })
 

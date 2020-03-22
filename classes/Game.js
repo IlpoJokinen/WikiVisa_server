@@ -4,6 +4,8 @@ module.exports = (io) => class Game {
 
     constructor(properties) {
         this.id = properties.id
+        this.gameCreator = properties.gameCreator
+        this.started = false
         this.roomCode = properties.roomCode
         this.startGameCounter = 15
         this.defaults = {
@@ -46,10 +48,12 @@ module.exports = (io) => class Game {
     }
 
     startGame() {
+        this.started = true
         this.startTimer()
     } 
 
     startTimer() {
+        io.emit(this.roomCode).emit("game started")
         let counter = setInterval(() => {
             let currentTime = this.updateGameTime()
             if(currentTime <= 0) {
