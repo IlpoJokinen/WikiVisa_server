@@ -95,7 +95,22 @@ function startGame(game_id, socket_id){
     return false
 }
 
+function getPublicGames() {
+    const publicGames = []
+    games.forEach(game => {
+        if(game.visibility && game.view === 1) {
+            publicGames.push(game.getAsFindGameItem())
+        }
+    })
+    return publicGames
+}
+
 io.on("connection", (socket) => { 
+
+    socket.on('get public games', () => {
+        socket.emit('send public games', getPublicGames())
+    })
+
     socket.on('create game', data => {
         if(!data.gamertag.length) {
             data.gamertag = utils.generateRandomString(10)
@@ -120,12 +135,12 @@ io.on("connection", (socket) => {
 
     socket.on("join game", data => {
         if(!roomCodeExists(data.roomCode)) {
-            socket.emit("error while joining", "Provide another roomcode, the one you gave doesn't exit")
+            socket.emit("error while joining", "We couldn't find the game you were looking for. Check the room code for spelling mistakes!")
             return false
         }
         let game = getGameByRoomCode(data.roomCode)
         if(game.view !== 1){
-            socket.emit("error while joining", "Game with the provided room code already started. Provide another room code")
+            socket.emit("error while joining", "Bollocks! Game has already started. Provide another room code!")
             return false
         }
         //verrataan gamertagia huoneen muiden pelaajien tageihin 

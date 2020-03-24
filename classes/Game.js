@@ -17,7 +17,7 @@ module.exports = (io) => class Game {
                 questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
                 roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 5
             }, 
-            visibility: properties.visibility.public ? true : false
+            visibility: properties.visibility
         }
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
@@ -236,6 +236,15 @@ module.exports = (io) => class Game {
             delete copyOfThis[arguments[i]]
         }
         return copyOfThis
+    }
+
+    getAsFindGameItem() {
+        return {
+            roomCode: this.roomCode,
+            categories: this.categories,
+            maxPlayers: 5,
+            currentPlayers: 1,
+        }
     }
 
     get() {
