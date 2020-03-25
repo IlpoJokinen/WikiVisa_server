@@ -1,4 +1,7 @@
 const {Question} = require('./Question')
+let categories = {
+    Geoghraphy: ["area", "population", "officialLanguage", "capital"]
+}
 
 module.exports = (io) => class Game {
 
@@ -7,10 +10,10 @@ module.exports = (io) => class Game {
         this.gameCreator = properties.gameCreator
         this.started = false
         this.roomCode = properties.roomCode
-        this.startGameCounter = 15
+        this.startGameCounter = 5
         this.defaults = {
             question: {
-                categories: properties.question.categories.length ? properties.question.categories : ['capital'],
+                categories: properties.question.categories.length ? properties.question.categories : categories.Geoghraphy,
                 count: properties.question.count.length ? properties.question.count : 5,
             }, 
             counters: {

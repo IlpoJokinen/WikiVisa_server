@@ -5,7 +5,9 @@ const nodeCache = new NodeCache();
 const { 
     getUsStates,
     getCountriesWithOfficialLanguages,
-    getCountriesWithCapitals
+    getCountriesWithCapitals,
+    getCountriesWithPopulation,
+    getCountriesArea
 } = require('../wikiQuery.js')
 
 class Question {
@@ -60,6 +62,9 @@ class Question {
         switch(this.options.category) {
             case 'officialLanguage': query = getCountriesWithOfficialLanguages(); break
             case 'capital': query = getCountriesWithCapitals(); break
+            case 'population': query = getCountriesWithPopulation(); break
+            case 'area': query = getCountriesArea(); break
+
         }
         this.options.query = encodeURI(query)
     }
@@ -70,15 +75,19 @@ class Question {
                 this.title = `What is the official language of #`; break
             case 'capital':
                 this.title = `What is the capital of #`; break
+            case 'population':
+                this.title = `#`; break
+            case 'area':
+                this.title = `#`; break
             default:
                 this.title = 'Question missing' 
         }
     }
 
     setChoices() {
-        let randomizedItems = this.getRandomItems(this.options.choiceCount)
-        this.choices = this.filterChoices(randomizedItems)
-        this.setCorrectAnswer(randomizedItems)
+        this.randomizedItems = this.getRandomItems(this.options.choiceCount)
+        this.choices = this.filterChoices(this.randomizedItems)
+        this.options.setCorrectAnswer()
     }
 
     filterChoices(items) {
@@ -89,13 +98,43 @@ class Question {
         return choices
     }
 
-    setCorrectAnswer(choices) {
-        const randomItemIndex = Math.floor(Math.random() * choices.length)
-        const randomItem = choices[randomItemIndex]
+    setCorrectAnswerRandom() {
+        const randomItemIndex = Math.floor(Math.random() * this.randomizedItems.length)
+        const randomItem = this.randomizedItems[randomItemIndex]
         this.updateQuestionTitle(randomItem[0])
         this.answer = {
             name: randomItem[1],
             index: randomItemIndex 
+        }
+    }
+
+    setCorrectAnswerMaxOrMin() {
+        let random = Math.round(Math.random())
+        let title = this.options.titleVariants[random]
+        this.updateQuestionTitle(title)
+        
+        let index = 0
+        let helper = {}
+        random === 0 ? helper[0] = Infinity : helper[0] = -Infinity
+
+        if(random === 0){
+            this.randomizedItems.forEach((c, i) => {
+                if(parseInt(c[0]) < helper[0]){
+                    index = i
+                    helper = c
+                }
+            })
+        } else if(random === 1){
+            this.randomizedItems.forEach((c, i) => {
+                if(parseInt(c[0]) > helper[0]){
+                    index = i
+                    helper = c
+                }
+            })
+        }
+        this.answer = {
+            name: helper[1],
+            index: index
         }
     }
 
@@ -126,16 +165,29 @@ class Question {
     removeUnusedAttributes() {
         delete this.options
         delete this.filteredData
+        delete this.randomizedItems
     }
 
     setOptions(category) {
         this.options = {
             "officialLanguage": {
-                "choiceCount": 4 
+                "choiceCount": 4,
+                "setCorrectAnswer": () => this.setCorrectAnswerRandom()
             },
             "capital" : {
-                "choiceCount": 4
+                "choiceCount": 4,
+                "setCorrectAnswer": () => this.setCorrectAnswerRandom()
             },
+            "population": {
+                "choiceCount": 3,
+                "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
+                "titleVariants": ['Which country has the smallest population', 'Which country has the biggest population']
+            }, 
+            "area": {
+                "choiceCount": 3,
+                "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
+                "titleVariants": ['Which country is the smallest by area', 'Which country is the biggest by area']
+            }
         }[category]
         this.options.category = category
         this.setQuery()

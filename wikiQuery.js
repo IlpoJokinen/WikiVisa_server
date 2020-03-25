@@ -35,10 +35,21 @@ function getCountriesWithCapitals(){
     ORDER BY ?countryLabel`
 }
 
+function getCountriesWithPopulation(){
+    return `SELECT DISTINCT ?population ?countryLabel
+    {
+      ?country wdt:P31 wd:Q6256 ;
+               wdt:P1082 ?population .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+    }
+    GROUP BY ?population ?countryLabel
+    ORDER BY DESC(?population)`
+}
+
 //country area in km2 
 function getCountriesArea (){
  
-    return `SELECT DISTINCT ?countryLabel ?area WHERE {
+    return `SELECT DISTINCT ?area ?countryLabel WHERE {
         ?country wdt:P31 wd:Q3624078.
         FILTER(NOT EXISTS { ?country wdt:P31 wd:Q3024240. })
         FILTER(NOT EXISTS { ?country wdt:P31 wd:Q28171280. })
@@ -89,7 +100,6 @@ function getCountriesAndFlags(){
 //Work in progress wont for some reason return periodic table column 1 elements
 // and also now return column 8 which today is purely theoretical
 function getPeriodicTable(){
-    
     `SELECT DISTINCT ?element ?symbol ?period ?periodNumber
     WHERE
     {
@@ -115,5 +125,7 @@ function getPeriodicTable(){
 module.exports = { 
     getUsStates,
     getCountriesWithOfficialLanguages,
-    getCountriesWithCapitals 
+    getCountriesWithCapitals,
+    getCountriesWithPopulation,
+    getCountriesArea
 }
