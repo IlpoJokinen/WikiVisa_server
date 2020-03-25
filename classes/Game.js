@@ -53,7 +53,7 @@ module.exports = (io) => class Game {
     } 
 
     startTimer() {
-        io.emit(this.roomCode).emit("game started")
+        io.in(this.roomCode).emit("game started")
         let counter = setInterval(() => {
             let currentTime = this.updateGameTime()
             if(currentTime <= 0) {

@@ -51,20 +51,6 @@ function removeGame(game){
     games.splice(gameIndex, 1)
 }
 
-function getGame(roomCode) {
-    return new Promise((resolve, reject) => {
-        let game = games.find(g => g.roomCode === roomCode)
-        if (game === undefined) {
-            reject({
-                errorId: 1,
-                message: `Room by the code ${roomCode} doesn't exist`
-            })
-        } else {
-            resolve(game)
-        }
-    })
-}
-
 function getGameByGameId(id) {
     return games.find(g => g.id === id)
 }
@@ -89,7 +75,7 @@ function getGameByRoomCode(roomCode){
 
 function startGame(game_id, socket_id){
     const game = getGameByGameId(game_id)
-    if(game.gameCreator === socket_id) {
+    if(game !== undefined && game.gameCreator === socket_id) {
         game.startGame()
     }
     return false
@@ -98,7 +84,7 @@ function startGame(game_id, socket_id){
 function getPublicGames() {
     const publicGames = []
     games.forEach(game => {
-        if(game.visibility && game.view === 1) {
+        if(game.visibility && !game.started) {
             publicGames.push(game.getAsFindGameItem())
         }
     })
@@ -139,7 +125,7 @@ io.on("connection", (socket) => {
             return false
         }
         let game = getGameByRoomCode(data.roomCode)
-        if(game.view !== 1){
+        if(game.started){
             socket.emit("error while joining", "Bollocks! Game has already started. Provide another room code!")
             return false
         }
@@ -168,13 +154,6 @@ io.on("connection", (socket) => {
     })
     socket.on("submit answer", data => submitAnswer(data))
     socket.on("set ready", data => setReady(data))
-    socket.on("get timer", data => {
-        let game = getGameByGameId(data.game_id)
-        let timerProperty = game.getTimerProperty(data.viewIndex)
-        socket.emit('send timer', {
-            [timerProperty]: game[timerProperty]
-        })
-    })
     socket.on("start game", data => {
         startGame(data.game_id, socket.id)
     })
