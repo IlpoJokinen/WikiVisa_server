@@ -17,12 +17,14 @@ module.exports = (io) => class Game {
                 questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
                 roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 5
             }, 
-            visibility: properties.visibility
+            visibility: properties.visibility,
+            losePoints: properties.losePoints
         }
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
         this.numberOfQuestions= this.defaults.question.count
         this.visibility = this.defaults.visibility
+        this.losePoints = this.defaults.losePoints
         this.categories =  this.defaults.question.categories
         this.questions = []
         this.currentQuestionIndex = 0
@@ -145,6 +147,10 @@ module.exports = (io) => class Game {
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
                 p.points += 10
+            } else {
+                if(this.losePoints && p.points >= 5) {
+                    p.points -= 5
+                }
             }
         })
     }
