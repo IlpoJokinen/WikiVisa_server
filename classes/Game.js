@@ -18,7 +18,7 @@ module.exports = (io) => class Game {
             }, 
             counters: {
                 questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
-                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 5
+                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
             }, 
             visibility: properties.visibility,
             losePoints: properties.losePoints
@@ -126,7 +126,8 @@ module.exports = (io) => class Game {
             question_id: question.id,
             answer: {
                 name: question.answer.name,
-                value: question.answer.index
+                value: question.answer.index,
+                answerTitle: question.answer.answerTitle
             }
         })
     }

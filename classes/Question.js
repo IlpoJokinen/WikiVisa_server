@@ -83,6 +83,25 @@ class Question {
                 this.title = 'Question missing' 
         }
     }
+    
+    setAnswerTitle(string, random) {
+        switch(this.options.category) {
+            case 'officialLanguage':
+                this.answerTitle = `Official language of ${string} is `; break
+            case 'capital':
+                this.answerTitle = `Capital of ${string} is `; break
+            case 'population':
+                this.answerTitle = this.options.answerTitleVariants[random]; 
+                this.answerTitle = this.answerTitle.replace("#", string)
+                break
+            case 'area':
+                this.answerTitle = this.options.answerTitleVariants[random]
+                this.answerTitle = this.answerTitle.replace("#", string)
+                break
+            default:
+                this.answerTitle = 'Question missing' 
+        }
+    }
 
     setChoices() {
         this.randomizedItems = this.getRandomItems(this.options.choiceCount)
@@ -102,9 +121,11 @@ class Question {
         const randomItemIndex = Math.floor(Math.random() * this.randomizedItems.length)
         const randomItem = this.randomizedItems[randomItemIndex]
         this.updateQuestionTitle(randomItem[0])
+        this.setAnswerTitle(randomItem[0])
         this.answer = {
             name: randomItem[1],
-            index: randomItemIndex 
+            index: randomItemIndex,
+            answerTitle: this.answerTitle
         }
     }
 
@@ -132,9 +153,11 @@ class Question {
                 }
             })
         }
+        this.setAnswerTitle(helper[0], random)
         this.answer = {
             name: helper[1],
-            index: index
+            index: index,
+            answerTitle: this.answerTitle
         }
     }
 
@@ -166,6 +189,7 @@ class Question {
         delete this.options
         delete this.filteredData
         delete this.randomizedItems
+        delete this.answerTitle
     }
 
     setOptions(category) {
@@ -181,12 +205,14 @@ class Question {
             "population": {
                 "choiceCount": 3,
                 "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
-                "titleVariants": ['Which country has the smallest population', 'Which country has the biggest population']
+                "titleVariants": ['Which country has the smallest population', 'Which country has the biggest population'],
+                "answerTitleVariants": ['The smallest population of # is in ', 'The biggest population of # is in ']
             }, 
             "area": {
                 "choiceCount": 3,
                 "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
-                "titleVariants": ['Which country is the smallest by area', 'Which country is the biggest by area']
+                "titleVariants": ['Which country is the smallest by area', 'Which country is the biggest by area'],
+                "answerTitleVariants": ['The smallest country with an area of # km² is ', 'The biggest country with an area of # km² is ']
             }
         }[category]
         this.options.category = category
