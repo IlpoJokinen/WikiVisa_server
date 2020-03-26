@@ -1,11 +1,7 @@
-
 // Regular View
-describe('Question Screen (Regular Screen)', () => {
+describe('RoundEnd Screen (Regular Screen)', () => {
     beforeEach(() => {
       cy.visit('/')
-      cy.get('#gamertagInput')
-          .type('testUser')
-      
     })
 
     
@@ -13,7 +9,7 @@ describe('Question Screen (Regular Screen)', () => {
     })
 
  // Phone (Iphone6) View
- describe('Question Screen (Iphone 6)', () => {
+ describe('RoundEnd Screen (Iphone 6)', () => {
     beforeEach(() => {
       cy.viewport('iphone-6')
       cy.visit('/')
