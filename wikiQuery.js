@@ -36,7 +36,7 @@ function getCountriesWithCapitals(){
 }
 
 function getCountriesWithPopulation(){
-    return `SELECT DISTINCT ?population ?countryLabel
+    return `SELECT DISTINCT ?countryLabel ?population
     {
       ?country wdt:P31 wd:Q6256 ;
                wdt:P1082 ?population .
@@ -49,7 +49,7 @@ function getCountriesWithPopulation(){
 //country area in km2 
 function getCountriesArea (){
  
-    return `SELECT DISTINCT ?area ?countryLabel WHERE {
+    return `SELECT DISTINCT ?countryLabel ?area WHERE {
         ?country wdt:P31 wd:Q3624078.
         FILTER(NOT EXISTS { ?country wdt:P31 wd:Q3024240. })
         FILTER(NOT EXISTS { ?country wdt:P31 wd:Q28171280. })
