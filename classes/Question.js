@@ -129,7 +129,8 @@ class Question {
                 }
             })
         }
-        this.setAnswerTitle(helper[1])
+        let beautifiedValue = (Math.round(parseFloat(helper[1]) * 100) / 100).toLocaleString('en').replace(/,/g," ",)
+        this.setAnswerTitle(beautifiedValue)
         this.answer = {
             name: helper[0],
             index: index,
@@ -202,7 +203,7 @@ class Question {
             }, 
             "area": {
                 "choiceCount": 3,
-                "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(), 
+                "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
                 "variants": [
                     {
                         "questionTitle": 'Which country is the smallest by area',
