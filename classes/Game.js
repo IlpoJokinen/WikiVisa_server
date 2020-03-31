@@ -1,4 +1,7 @@
 const {Question} = require('./Question')
+let categories = {
+    Geoghraphy: ["area", "population", "officialLanguage", "capital"]
+}
 
 module.exports = (io) => class Game {
 
@@ -10,19 +13,21 @@ module.exports = (io) => class Game {
         this.startGameCounter = 5
         this.defaults = {
             question: {
-                categories: properties.question.categories.length ? properties.question.categories : ['capital'],
+                categories: properties.question.categories.length ? properties.question.categories : categories.Geoghraphy,
                 count: properties.question.count.length ? properties.question.count : 5,
             }, 
             counters: {
                 questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
-                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 5
+                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
             }, 
-            visibility: properties.visibility
+            visibility: properties.visibility,
+            losePoints: properties.losePoints
         }
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
         this.numberOfQuestions= this.defaults.question.count
         this.visibility = this.defaults.visibility
+        this.losePoints = this.defaults.losePoints
         this.categories =  this.defaults.question.categories
         this.questions = []
         this.currentQuestionIndex = 0
@@ -53,7 +58,7 @@ module.exports = (io) => class Game {
     } 
 
     startTimer() {
-        io.emit(this.roomCode).emit("game started")
+        io.in(this.roomCode).emit("game started")
         let counter = setInterval(() => {
             let currentTime = this.updateGameTime()
             if(currentTime <= 0) {
@@ -121,7 +126,8 @@ module.exports = (io) => class Game {
             question_id: question.id,
             answer: {
                 name: question.answer.name,
-                value: question.answer.index
+                value: question.answer.index,
+                answerTitle: question.answer.answerTitle
             }
         })
     }
@@ -145,6 +151,10 @@ module.exports = (io) => class Game {
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
                 p.points += 10
+            } else {
+                if(this.losePoints && p.points >= 5) {
+                    p.points -= 5
+                }
             }
         })
     }

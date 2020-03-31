@@ -1,3 +1,5 @@
+//import { Play, Tools } from '../../../../WikiVisa_Client/node_modules/react-bootstrap-icons'
+
 
 // Regular View
 describe('Welcome Screen (Regular Screen)', () => {
@@ -8,52 +10,92 @@ describe('Welcome Screen (Regular Screen)', () => {
     it('Check Welcome text', () => {
         cy.get('h1').should(
             'contain',
-            'Welcome'
+            'Give Gamertag'
+          )
+        cy.get('#randomGamerTagButton').click()
+        cy.get('h1').should(
+            'contain',
+            'Join or Create a game'
           )
       })
 
-      it('Check Input Labels', () => {
-        cy.get('#gamertaglabel').should(
-            'contain',
-            'Enter your gamertag')
-          cy.get('#roomcodelabel').should(
-            'contain',
-            'Enter room code')
-      })
-
       it('Check Input Placeholders', () => {
-        cy.get('#gamertag').should(
-          'have.attr', 'placeholder', 'Enter your gamertag')
-        cy.get('#roomcode').should(
-          'have.attr', 'placeholder', 'Enter room code')
+        cy.get('#gamertagInput').should(
+          'have.attr', 'placeholder', 'Provide gamertag')
       })
 
       it('Check Input Text', () => {
-        cy.get('#gamertag')
-          .should('be.empty') 
-        cy.get('#roomcode')
-          .should('be.empty') 
+        cy.get('#gamertagInput')
+        .should('be.empty') 
+      
+     
+      })
+  
+      it('Check Button Text', () => {
+          cy.get('#nextButton').should(
+            'contain',
+            'Next')
+          cy.get('#randomGamerTagButton').should(
+            'contain',
+            'Randomize name')
+          cy.get('#randomGamerTagButton').click()
+          cy.get('#joinGameButton').should(
+            'contain',
+            'Join Game')
+            cy.get('#createGameButton').should(
+              'contain',
+              'Create Game')
+
+          
       })
 
-      it('Verify alert on empty GamerTag (Join Game Click)', function(){  
-            const stub = cy.stub()  
-            cy.on ('window:alert', stub)
-            cy
-            .get('#joingamebutton').click()
-            .then(() => {
-              expect(stub.getCall(0))
-                .to.be.calledWith("Provide another roomcode, the one you gave doesn't exit")      
-            })  
-        
+      it('Check if Button disabled if nothing provided ', () => {
+        cy.get('#nextButton')
+          .should('be.disabled')
+
       })
-        
-      it('Check Button Texts', () => {
-        cy.get('#joingamebutton').should(
-          'contain',
-          'Join Game')
-          cy.get('#creategamebutton').should(
-            'contain',
-            'Create Game')
+      it('Check if Button enabled if something provided ', () => {
+        cy.get('#gamertagInput')
+          .type('testUser')
+        cy.get('#nextButton')
+          .should('be.enabled')
+
+      })
+
+
+      
+      describe('Welcome Screen - Join Game (Regular Screen)', () => {
+        beforeEach(() => {
+          cy.get('#randomGamerTagButton').click()
+        })
+
+        it('Join Game ', () => {
+      
+  
+        })
+
+        it('Check Welcome text', () => {
+          cy.get('h1').should(
+              'contain',
+              'Enter Room Code or Find Game'
+            )
+
+        })
+
+
+      })
+
+      describe('Welcome Screen - Create Game (Regular Screen)', () => {
+        beforeEach(() => {
+          cy.get('#randomGamerTagButton').click()
+        })
+
+        it('Create Game ', () => {
+          
+  
+        })
+
+
       })
 
     })
@@ -63,45 +105,48 @@ describe('Welcome Screen (Regular Screen)', () => {
       beforeEach(() => {
         cy.viewport('iphone-6')
         cy.visit('/')
-      })
-  
+      })   
+
       it('Check Welcome text', () => {
         cy.get('h1').should(
             'contain',
-            'Welcome'
+            'Give Gamertag'
           )
       })
 
-      it('Check Input Labels', () => {
-        cy.get('#gamertaglabel').should(
-            'contain',
-            'Enter your gamertag')
-          cy.get('#roomcodelabel').should(
-            'contain',
-            'Enter room code')
-      })
-
       it('Check Input Placeholders', () => {
-        cy.get('#gamertag').should(
-          'have.attr', 'placeholder', 'Enter your gamertag')
-        cy.get('#roomcode').should(
-          'have.attr', 'placeholder', 'Enter room code')
+        cy.get('#gamertagInput').should(
+          'have.attr', 'placeholder', 'Provide gamertag')
       })
 
       it('Check Input Text', () => {
-        cy.get('#gamertag')
-          .type('text') 
-        cy.get('#roomcode')
-          .type('text') 
+        cy.get('#gamertagInput')
+        .should('be.empty') 
+     
+      })
+      
+      it('Check Button Text', () => {
+          cy.get('#nextButton').should(
+            'contain',
+            'Next')
+          cy.get('#randomGamerTagButton').should(
+            'contain',
+            'Randomize name')
       })
 
-      it('Check Button Texts', () => {
-        cy.get('#joingamebutton').should(
-          'contain',
-          'Join Game')
-          cy.get('#creategamebutton').should(
-            'contain',
-            'Create Game')
+      it('Check if Button disabled if nothing provided ', () => {
+        cy.get('#nextButton')
+          .should('be.disabled')
+
       })
+
+      it('Check if Button enabled if something provided ', () => {
+        cy.get('#gamertagInput')
+          .type('testUser')
+        cy.get('#nextButton')
+          .should('be.enabled')
+
+      })
+
 
     })
