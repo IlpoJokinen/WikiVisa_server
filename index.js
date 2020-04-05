@@ -10,6 +10,8 @@ const User = require('./models/Test_Schema')
 const utils = require('./Utilities')
 const games = []
 let game_id = 0
+const { fetchAllTheDataToCache } = require("./fetchData")
+fetchAllTheDataToCache()
 
 app.use(express.static('./client/build'))
 app.get('/', (req, res) => res.send('Hello World!'))

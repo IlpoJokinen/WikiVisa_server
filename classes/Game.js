@@ -1,4 +1,4 @@
-const {Question} = require('./Question')
+const QuestionSet = require('./QuestionSet')
 let categories = {
     Geoghraphy: ["area", "population", "officialLanguage", "capital"]
 }
@@ -34,22 +34,18 @@ module.exports = (io) => class Game {
         this.view = 1
         this.players = []
         this.correctAnswers = []
-        this.questionsCreated = 0
         this.ready = false
         this.init()
     }
     init() {
-        this.getQuestion().then(question => {
-            this.setCorrectAnswer(question)
-            delete question.answer
-            this.questions.push(question)
+        this.getQuestions().then(questions => {
+            questions.forEach(question => {
+                this.setCorrectAnswer(question)
+                delete question.answer
+                this.questions.push(question)
+            })
             this.ready = true
         })
-        setTimeout(() => {
-            if(this.questionsCreated != this.numberOfQuestions){
-                this.init()
-            }
-        }, 1000)
     }
 
     startGame() {
@@ -131,19 +127,11 @@ module.exports = (io) => class Game {
             }
         })
     }
-    getQuestion() {
-        let category = this.getNextCategory()
-        let question = new Question(this.questionsCreated, category)
-        this.questionsCreated++
-        return question.get()
+    getQuestions() {
+        let questions = new QuestionSet(["Geoghraphy"], this.numberOfQuestions)
+        return questions.get()
     }
-
-    getNextCategory() {
-        let randomIndex = Math.floor(Math.random() * this.categories.length),
-        randomCategory = this.categories[randomIndex]
-        return randomCategory
-    }
-
+    
     checkPointsOfTheRound(){
         const correctAnswerOftheRound = this.getCorrectAnswer()
         this.players.map(p => {
