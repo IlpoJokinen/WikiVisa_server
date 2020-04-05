@@ -36,14 +36,9 @@ function getGameByGameId(id) {
     return games.find(g => g.id === id)
 }
 
-function submitAnswer(data) {
-    let game = getGameByGameId(data.game_id)
-    game.submitAnswer(data)
-}
-
 function setReady(data) {
     let game = getGameByGameId(data.game_id)
-    game.setPlayerReady(data)
+    game.setAnswerAndPlayerReady(data)
 }
 
 function roomCodeExists(roomCode) {
@@ -133,8 +128,9 @@ io.on("connection", (socket) => {
         socket.emit("send game", game.gameWithoutCertainAttributes("correctAnswers", "questions"))
         io.in(game.roomCode).emit("send players", game.players)
     })
-    socket.on("submit answer", data => submitAnswer(data))
-    socket.on("set ready", data => setReady(data))
+    socket.on("set ready", data => {
+        setReady(data)
+    })
     socket.on("start game", data => {
         startGame(data.game_id, socket.id)
     })

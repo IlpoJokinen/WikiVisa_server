@@ -203,17 +203,12 @@ module.exports = (io) => class Game {
         this.players.push(player)
     }
 
-    submitAnswer(data) {
-        let player = this.getPlayerByGametag(data.gamertag)
-        if(player.constructor === Object) { // Player exists
-            delete data.gamertag
-            delete data.game_id
-            let existingAnswer = this.getAnswerByQuestionId(player.answers, data.question_id)
-            if(existingAnswer.constructor === Object) {
-                existingAnswer.answer = data.answer // Answer already exists, so we are going to update it
-            } else {
-                player.answers.push(data) // Create a new answer object
-            }
+    submitAnswer(data, player) {
+        let existingAnswer = this.getAnswerByQuestionId(player.answers, data.question_id)
+        if(existingAnswer.constructor === Object) {
+            existingAnswer.answer = data.answer // Answer already exists, so we are going to update it
+        } else {
+            player.answers.push(data) // Create a new answer object
         }
     }
 
@@ -225,9 +220,12 @@ module.exports = (io) => class Game {
         return this.players.map(p => ({ ...p, answers: [] }))
     }
 
-    setPlayerReady(data) {
+    setAnswerAndPlayerReady(data) {
         let player = this.getPlayerByGametag(data.gamertag, data.roomCode)
-        if(player.constructor === Object) { 
+        if(player.constructor === Object) {
+            delete data.gamertag
+            delete data.game_id
+            this.submitAnswer(data, player)
             player.ready = true
             if(this.checkIfAllPlayersReady()){
                 this.questionCounter = 0
