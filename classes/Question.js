@@ -63,20 +63,20 @@ class Question {
         }
     }
     
-    setCorrectAnswerMaxOrMin() {
+    setCorrectAnswerMaxOrMin(minOrMax) {
         this.setQuestionTitle()
         let index = 0
         let helper = {}
-        this.random === 0 ? helper[1] = Infinity : helper[1] = -Infinity
+        minOrMax === 0 ? helper[1] = Infinity : helper[1] = -Infinity
     
-        if(this.random === 0){
+        if(minOrMax === 0){
             this.randomizedItems.forEach((c, i) => {
                 if(parseInt(c[1]) < helper[1]){
                     index = i
                     helper = c
                 }
             })
-        } else if(this.random === 1){
+        } else if(minOrMax === 1){
             this.randomizedItems.forEach((c, i) => {
                 if(parseInt(c[1]) > helper[1]){
                     index = i

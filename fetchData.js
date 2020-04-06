@@ -4,11 +4,11 @@ const NodeCache = require( "node-cache" );
 const nodeCache = new NodeCache();
 
 const { 
-    getUsStates,
     getCountriesWithOfficialLanguages,
     getCountriesWithCapitals,
     getCountriesWithPopulation,
-    getCountriesArea
+    getCountriesArea,
+    getNhlPlayersWithPointsMoreThanTwoHundred
 } = require('./wikiQuery.js')
 
 
@@ -16,8 +16,9 @@ let questionTypes = [
     {questionTypeStr: "area", query: encodeURI(getCountriesArea())},
     {questionTypeStr: "population", query: encodeURI(getCountriesWithPopulation())},
     {questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
-    {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())}
-    
+    {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
+    {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()}
+
 ]
 
 function fetchAllTheDataToCache () {

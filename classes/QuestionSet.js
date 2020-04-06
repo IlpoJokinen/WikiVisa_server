@@ -2,9 +2,11 @@ const AreaQuestion = require("./questionTypes/geoghraphy/Area")
 const PopulationQuestion = require("./questionTypes/geoghraphy/Population")
 const OfficialLanguageQuestion = require("./questionTypes/geoghraphy/OfficialLanguage")
 const CapitalQuestion = require("./questionTypes/geoghraphy/Capital")
+const NhlPointsQuestion = require("./questionTypes/sport/NhlPoints")
 
 let categories = {
-    Geoghraphy: ["area", "officialLanguage", "population", "capital"]
+    Geography: ["area", "officialLanguage", "population", "capital"],
+    Sport: ["nhlPoints"]
 }
 
 class QuestionSet {
@@ -24,10 +26,11 @@ class QuestionSet {
             let randomizedQuestionType = this.randomizeQuestionType(questionTypes)
             
             switch(randomizedCategory){
-                case "Geoghraphy": 
-                    createdQuestion = this.createGeoghraphyQuestion(randomizedQuestionType); break;
+                case "Geography": 
+                    createdQuestion = this.createGeographyQuestion(randomizedQuestionType); break;
                 //case "History": 
-                //case "Sports"
+                case "Sport":
+                    createdQuestion = this.createSportsQuestion(randomizedQuestionType); break;
             }
             createdQuestion.id = i;
             this.questions.push(createdQuestion)
@@ -47,7 +50,7 @@ class QuestionSet {
         return randomizedQuestionType
     }
 
-    createGeoghraphyQuestion(questionType) {
+    createGeographyQuestion(questionType) {
         switch(questionType) {
             case "area":
                 return new AreaQuestion()
@@ -57,6 +60,13 @@ class QuestionSet {
                 return new PopulationQuestion()
             case "officialLanguage":
                 return new OfficialLanguageQuestion()
+        }
+    }
+
+    createSportsQuestion(questionType) {
+        switch(questionType) {
+            case "nhlPoints": 
+                return new NhlPointsQuestion()
         }
     }
 

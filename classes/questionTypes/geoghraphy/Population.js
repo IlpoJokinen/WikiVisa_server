@@ -32,7 +32,7 @@ class Population extends Question{
     }
 
     chooseAnswerSetter() {
-        this.setCorrectAnswer = this.random <= 1 ? () => this.setCorrectAnswerMaxOrMin() : () => this.setCorrectAnswerNearest()
+        this.setCorrectAnswer = this.random <= 1 ? () => this.setCorrectAnswerMaxOrMin(this.random) : () => this.setCorrectAnswerNearest(1)
     }
 }
 

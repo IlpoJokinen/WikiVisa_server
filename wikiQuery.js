@@ -62,6 +62,8 @@ function getCountriesArea (){
 
 }
 
+
+
 //link decoded from file md5 and country name
 function getCountriesAndFlags(){
     let query =
@@ -121,11 +123,29 @@ function getPeriodicTable(){
 
     return query; 
 }
+
+function getNhlPlayersWithPointsMoreThanTwoHundred (){
+    let query =  `SELECT DISTINCT ?itemLabel ?pointsLabel 
+    WHERE 
+    {
+      ?item wdt:P31 wd:Q5 .
+      ?item wdt:P641 wd:Q41466 .
+      ?item wdt:P118 wd:Q1215892 .
+      
+      ?item wdt:P6544 ?points .
+      ?item wdt:P569 ?dob .
+      FILTER (?points > 200 && YEAR(?dob) > 1980)
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    }`
+    let encoded = "SELECT%20DISTINCT%20%3FitemLabel%20%3FpointsLabel%20%0AWHERE%20%0A%7B%0A%20%20%3Fitem%20wdt%3AP31%20wd%3AQ5%20.%0A%20%20%3Fitem%20wdt%3AP641%20wd%3AQ41466%20.%0A%20%20%3Fitem%20wdt%3AP118%20wd%3AQ1215892%20.%0A%20%20%0A%20%20%3Fitem%20wdt%3AP6544%20%3Fpoints%20.%0A%20%20%3Fitem%20wdt%3AP569%20%3Fdob%20.%0A%20%20FILTER%20%28%3Fpoints%20%3E%20200%20%26%26%20YEAR%28%3Fdob%29%20%3E%201980%29%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%7D"
+    return encoded
+}
     
 module.exports = { 
     getUsStates,
     getCountriesWithOfficialLanguages,
     getCountriesWithCapitals,
     getCountriesWithPopulation,
-    getCountriesArea
+    getCountriesArea,
+    getNhlPlayersWithPointsMoreThanTwoHundred
 }
