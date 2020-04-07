@@ -7,7 +7,7 @@ const utils = require('./Utilities')
 const games = []
 let game_id = 0
 
-app.use(express.static('./client/build'))
+app.use(express.static('./client'))
 app.get('/', (req, res) => res.send('Hello World!'))
 
 const server = app.listen(port, () => console.log(`WikiVisa app listening on port ${port}!`))
