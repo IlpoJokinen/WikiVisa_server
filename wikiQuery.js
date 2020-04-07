@@ -137,8 +137,21 @@ function getNhlPlayersWithPointsMoreThanTwoHundred (){
       FILTER (?points > 200 && YEAR(?dob) > 1980)
       SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
     }`
-    let encoded = "SELECT%20DISTINCT%20%3FitemLabel%20%3FpointsLabel%20%0AWHERE%20%0A%7B%0A%20%20%3Fitem%20wdt%3AP31%20wd%3AQ5%20.%0A%20%20%3Fitem%20wdt%3AP641%20wd%3AQ41466%20.%0A%20%20%3Fitem%20wdt%3AP118%20wd%3AQ1215892%20.%0A%20%20%0A%20%20%3Fitem%20wdt%3AP6544%20%3Fpoints%20.%0A%20%20%3Fitem%20wdt%3AP569%20%3Fdob%20.%0A%20%20FILTER%20%28%3Fpoints%20%3E%20200%20%26%26%20YEAR%28%3Fdob%29%20%3E%201980%29%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%7D"
+    let encoded = "SELECT%20DISTINCT%20%3FitemLabel%20%3FpointsLabel%20%3FgoalsLabel%20%3FassistsLabel%20%0A%20%20%20%20WHERE%20%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP31%20wd%3AQ5%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP641%20wd%3AQ41466%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP118%20wd%3AQ1215892%20.%0A%20%20%20%20%20%20%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP6544%20%3Fpoints%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP6545%20%3Fassists%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP6509%20%3Fgoals%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP569%20%3Fdob%20.%0A%20%20%20%20%20%20FILTER%20%28%3Fpoints%20%3E%20200%20%26%26%20YEAR%28%3Fdob%29%20%3E%201980%29%0A%20%20%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%20%20%7D"
     return encoded
+}
+
+function getWinterOlympicGames() {
+    let query = `SELECT ?itemLabel ?countryLabel WHERE {
+        ?item wdt:P31 wd:Q82414;
+          wdt:P17 ?country.
+        ?item wdt:P585 ?pit .
+      FILTER (YEAR(?pit) > 1950 && YEAR(?pit) < 2020)
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+      }
+      `
+      let encoded = `SELECT%20%3FitemLabel%20%3FcountryLabel%20WHERE%20%7B%0A%20%20%20%20%20%20%20%20%3Fitem%20wdt%3AP31%20wd%3AQ82414%3B%0A%20%20%20%20%20%20%20%20%20%20wdt%3AP17%20%3Fcountry.%0A%20%20%20%20%20%20%20%20%3Fitem%20wdt%3AP585%20%3Fpit%20.%0A%20%20%20%20%20%20FILTER%20%28YEAR%28%3Fpit%29%20%3E%201950%20%26%26%20YEAR%28%3Fpit%29%20%3C%202020%29%0A%20%20%20%20%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%20%20%20%20%7D`
+      return encoded
 }
     
 module.exports = { 
@@ -147,5 +160,6 @@ module.exports = {
     getCountriesWithCapitals,
     getCountriesWithPopulation,
     getCountriesArea,
-    getNhlPlayersWithPointsMoreThanTwoHundred
+    getNhlPlayersWithPointsMoreThanTwoHundred,
+    getWinterOlympicGames
 }

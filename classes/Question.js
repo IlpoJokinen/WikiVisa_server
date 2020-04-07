@@ -38,6 +38,17 @@ class Question {
         return randomItems
     }
 
+    reconstructDataSetForTheVariant() {
+        this.data = this.data.map(obj => {
+            let newObj = {}
+            this.variants[this.random].attributesForDataSet.forEach((key, i) => {
+                newObj[i] = obj[key]
+            })
+            return newObj
+        })
+        console.log(this.data)
+    }
+
     removeUnusedAttributes() {
         delete this.data
         delete this.randomizedItems

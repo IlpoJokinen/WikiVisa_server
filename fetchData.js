@@ -8,16 +8,18 @@ const {
     getCountriesWithCapitals,
     getCountriesWithPopulation,
     getCountriesArea,
-    getNhlPlayersWithPointsMoreThanTwoHundred
+    getNhlPlayersWithPointsMoreThanTwoHundred,
+    getWinterOlympicGames
 } = require('./wikiQuery.js')
 
 
 let questionTypes = [
     {questionTypeStr: "area", query: encodeURI(getCountriesArea())},
     {questionTypeStr: "population", query: encodeURI(getCountriesWithPopulation())},
-    {questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
-    {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
-    {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()}
+    //{questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
+    //{questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
+    {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
+    {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()}
 
 ]
 
@@ -45,7 +47,7 @@ function filterData(data) {
     let filteredData = []
     data.forEach(row => {
         let obj = {}, keys = Object.keys(row)
-        if(keys.length === 2) {
+        if(true) {
             keys.forEach((key, i) => {
                 obj[i] = row[key].value
             }) 
