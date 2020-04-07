@@ -1,4 +1,5 @@
 # WikiVisa_server
 
-Added jenkins
-Testing workspace
+Added jenkins to http://server.jaakkouusitalo.fi:8081
+Added new prod branch
+Added Git Webhook
