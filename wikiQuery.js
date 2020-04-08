@@ -153,13 +153,31 @@ function getWinterOlympicGames() {
       let encoded = `SELECT%20%3FitemLabel%20%3FcountryLabel%20WHERE%20%7B%0A%20%20%20%20%20%20%20%20%3Fitem%20wdt%3AP31%20wd%3AQ82414%3B%0A%20%20%20%20%20%20%20%20%20%20wdt%3AP17%20%3Fcountry.%0A%20%20%20%20%20%20%20%20%3Fitem%20wdt%3AP585%20%3Fpit%20.%0A%20%20%20%20%20%20FILTER%20%28YEAR%28%3Fpit%29%20%3E%201950%20%26%26%20YEAR%28%3Fpit%29%20%3C%202020%29%0A%20%20%20%20%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%20%20%20%20%7D`
       return encoded
 }
-    
-module.exports = { 
-    getUsStates,
-    getCountriesWithOfficialLanguages,
-    getCountriesWithCapitals,
-    getCountriesWithPopulation,
-    getCountriesArea,
-    getNhlPlayersWithPointsMoreThanTwoHundred,
-    getWinterOlympicGames
+
+function nobelLiterature() {
+  let query = `SELECT ?laurateLabel ?yearOfPriceReceived ?bookLabel ?birthYear ?deathYear  {
+    ?laurate p:P166 ?p166stm .
+    ?p166stm ps:P166 wd:Q37922; pq:P585 ?time .
+    ?laurate wdt:P800 ?book .
+    ?laurate wdt:P569 ?birth .
+    BIND(YEAR(?birth) AS ?birthYear)
+    ?laurate wdt:P570 ?death .
+    BIND(YEAR(?death) AS ?deathYear)
+    BIND(YEAR(?time) AS ?yearOfPriceReceived)
+    OPTIONAL { ?p166stm pq:P6208 ?p6208 . FILTER(LANG(?p6208)='en') }
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+  }`
+  return query
 }
+
+let questionTypesWithQueries = [
+  {questionTypeStr: "area", query: encodeURI(getCountriesArea())},
+  {questionTypeStr: "population", query: encodeURI(getCountriesWithPopulation())},
+  {questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
+  {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
+  {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
+  {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()},
+  {questionTypeStr: "literatureNobelist", query: encodeURI(nobelLiterature())}
+]
+    
+module.exports =  questionTypesWithQueries

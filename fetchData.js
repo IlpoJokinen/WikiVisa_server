@@ -2,23 +2,8 @@ const fetch = require("node-fetch");
 const NodeCache = require( "node-cache" );
 const nodeCache = new NodeCache();
 
-const { 
-    getCountriesWithOfficialLanguages,
-    getCountriesWithCapitals,
-    getCountriesWithPopulation,
-    getCountriesArea,
-    getNhlPlayersWithPointsMoreThanTwoHundred,
-    getWinterOlympicGames
-} = require('./wikiQuery.js')
+const questionTypesWithQueries = require('./wikiQuery.js')
 
-let questionTypesWithQueries = [
-    {questionTypeStr: "area", query: encodeURI(getCountriesArea())},
-    {questionTypeStr: "population", query: encodeURI(getCountriesWithPopulation())},
-    {questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
-    {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
-    {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
-    {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()}
-]
 const sleep = ms => {
     return new Promise(resolve => setTimeout(resolve, ms))
 }

@@ -128,7 +128,7 @@ module.exports = (io) => class Game {
         })
     }
     getQuestions() {
-        let questions = new QuestionSet(["geography", "sport"], this.numberOfQuestions)
+        let questions = new QuestionSet(["geography", "sport", "culture"], this.numberOfQuestions)
         return questions.get()
     }
     
