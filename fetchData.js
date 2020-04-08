@@ -1,7 +1,6 @@
 const fetch = require("node-fetch");
 const NodeCache = require( "node-cache" );
 const nodeCache = new NodeCache();
-let queriesFetched = 0
 
 const { 
     getCountriesWithOfficialLanguages,
@@ -12,7 +11,6 @@ const {
     getWinterOlympicGames
 } = require('./wikiQuery.js')
 
-
 let questionTypesWithQueries = [
     {questionTypeStr: "area", query: encodeURI(getCountriesArea())},
     {questionTypeStr: "population", query: encodeURI(getCountriesWithPopulation())},
@@ -20,34 +18,32 @@ let questionTypesWithQueries = [
     {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
     {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
     {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()}
-
 ]
-
-function fetchAllTheDataToCache () {
-    let fetchOneByOne = setInterval(() => {
-        if(queriesFetched < questionTypesWithQueries.length) {
-            init(questionTypesWithQueries[queriesFetched].questionTypeStr, questionTypesWithQueries[queriesFetched].query)
-        } else {
-            clearInterval(fetchOneByOne)
-        }
-    }, 3000)
+const sleep = ms => {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function init(questionTypeStr, query) {
-    fetchData(query).then(data => {
+async function fetchAllTheDataToCache () {
+    for(let i = 0; i < questionTypesWithQueries.length; i++) {
+        await init(questionTypesWithQueries[i].questionTypeStr, questionTypesWithQueries[i].query)
+        await sleep(1500)
+    }
+}
+
+async function init(questionTypeStr, query) {
+    try {
+        let data = await fetchData(query)
         let filteredData = filterData(data)
         nodeCache.set(questionTypeStr, filteredData)
-        queriesFetched++
-    })
+    } catch(e) {
+        console.log(e)
+    }
 }
 
-function fetchData(sql) {
-    return fetch(`https://query.wikidata.org/sparql?query=${sql}&format=json`)
-    .then(response => response.json())
-    .then(data => {
-        return data.results.bindings
-    })
-    .catch(error => console.log(error))
+async function fetchData(sql) {
+    let response = await fetch(`https://query.wikidata.org/sparql?query=${sql}&format=json`)
+    let data = await response.json()
+    return data.results.bindings
 }   
 
 function filterData(data) {

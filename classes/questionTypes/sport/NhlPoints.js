@@ -30,7 +30,6 @@ class NhlPoints extends Question{
     }
 
     setChoices() {
-        console.log(this.data)
         this.randomizedItems = this.getRandomItems(4)
         this.choices = this.filterChoices(0)
         this.setCorrectAnswer()

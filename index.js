@@ -1,33 +1,24 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
+app.use(express.static('./client/build'))
 const socket = require('socket.io')
-const mongoose = require('mongoose')
-const { MongoMemoryServer } = require('mongodb-memory-server')
-const mongod = new MongoMemoryServer()
 const port = process.env.PORT || 3001
-const User = require('./models/Test_Schema')
 const utils = require('./Utilities')
 const games = []
 let game_id = 0
 const { fetchAllTheDataToCache } = require("./fetchData")
-fetchAllTheDataToCache()
 
-app.use(express.static('./client/build'))
-app.get('/', (req, res) => res.send('Hello World!'))
+startServer()
 
+async function startServer() {
+await fetchAllTheDataToCache()
 const server = app.listen(port, () => console.log(`WikiVisa app listening on port ${port}!`))
-const io = socket(server)
+    
+app.use(cors())
+const io = socket(server)  
 const Game = require('./classes/Game')(io)
 
-app.use(cors())
-
-connectToMongo()
-
-async function connectToMongo() {
-    const uri = await getUri()
-    mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
-}
 async function getUri(){
     const uri = await mongod.getUri()
     return uri
@@ -156,4 +147,4 @@ io.on("connection", (socket) => {
         startGame(data.game_id, socket.id)
     })
 })
-
+}

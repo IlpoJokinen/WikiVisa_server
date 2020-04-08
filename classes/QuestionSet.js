@@ -5,9 +5,37 @@ const CapitalQuestion = require("./questionTypes/geoghraphy/Capital")
 const NhlPointsQuestion = require("./questionTypes/sport/NhlPoints")
 const WinterOlympicYearQuestion = require("./questionTypes/sport/winterOlympicYear")
 
+//Datan tuleva muoto cachessa, olioiden key:sejä käytetään apuna kun randomisoidaan kysymyskategorioita ja kysymystyyppejä - cache vielä toistaiseksi eri muodossa, 
+//mutta tämä muutettu mockaamaan muotoa jo etukäteen
 let categories = {
-    Geography: ["area", "officialLanguage", "population", "capital"],
-    Sport: ["nhlPoints", "winterOlympicYear"]
+    geography: {
+	    area: {
+            data: [],
+            variants: []
+        }, 
+        officialLanguage: {
+            data: [],
+            variants: []
+        }, 
+        population: {
+            data: [],
+            variants: []
+        }, 
+        capital: {
+            data: [],
+            variants: []
+        }
+    },
+    sport: { 
+        nhlPoints: {
+            data: [],
+            variants: []
+        }, 
+        winterOlympicYear: {
+            data: [],
+            variants: []
+        }
+    }
 }
 
 class QuestionSet {
@@ -23,14 +51,14 @@ class QuestionSet {
         for(let i = 0; i < this.numberOfQuestions; i++){
             let createdQuestion
             let randomizedCategory = this.randomizeCategory()
-            let questionTypes = categories[randomizedCategory]
+            let questionTypes = Object.keys(categories[randomizedCategory])
             let randomizedQuestionType = this.randomizeQuestionType(questionTypes)
             
             switch(randomizedCategory){
-                case "Geography": 
+                case "geography": 
                     createdQuestion = this.createGeographyQuestion(randomizedQuestionType); break;
-                case "Sport":
-                    createdQuestion = this.createSportsQuestion(randomizedQuestionType); break;
+                case "sport":
+                    createdQuestion = this.createSportQuestion(randomizedQuestionType); break;
             }
             createdQuestion.id = i;
             this.questions.push(createdQuestion)
@@ -63,7 +91,7 @@ class QuestionSet {
         }
     }
 
-    createSportsQuestion(questionType) {
+    createSportQuestion(questionType) {
         switch(questionType) {
             case "nhlPoints": 
                 return new NhlPointsQuestion()

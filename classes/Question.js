@@ -46,7 +46,6 @@ class Question {
             })
             return newObj
         })
-        console.log(this.data)
     }
 
     removeUnusedAttributes() {
