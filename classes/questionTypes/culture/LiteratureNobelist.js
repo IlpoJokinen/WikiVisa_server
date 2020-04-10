@@ -27,7 +27,7 @@ class LiteratureNobelist extends Question{
                 "attributesForDataSet": [0, 3]
             },
             {
-                "questionTitle": "Which year did # receive Nobel price in literature",
+                "questionTitle": "Which year did # received Nobel price in literature",
                 "answerTitle": "# received the price in ",
                 "attributesForDataSet": [0, 4]
             }

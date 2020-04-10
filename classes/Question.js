@@ -28,14 +28,23 @@ class Question {
             let randomIndex = Math.floor(Math.random() * this.data.length),
                 randomItem = this.data[randomIndex];
             this.data.splice(randomIndex, 1)
-            let choices = randomItems.map(i => i[1])
-            if(choices.includes(randomItem[1])){
+            if(this.isADuplicate(randomItems, randomItem)){
                 i--
                 continue;
             }
             randomItems.push(randomItem)
         }
         return randomItems
+    }
+    //tarkistaa ettei randomisoinnissa tule duplikaatteja 
+    isADuplicate(randomItems, randomItem) {
+        let zeros = randomItems.map(r => r[0])
+        let ones = randomItems.map(r => r[1])
+        if(zeros.includes(randomItem[0])){
+            return true
+        }else if(ones.includes(randomItem[1])){
+            return true
+        } else return false
     }
 
     reconstructDataSetForTheVariant() {
@@ -59,11 +68,13 @@ class Question {
         delete this.setAnswerTitle
         delete this.variants
         delete this.nodeCache
+        delete this.answerObjectsOtherAttribute
     }
 
     setCorrectAnswerRandom(indexForAnswer, indexForTitles) {
         const randomItemIndex = Math.floor(Math.random() * this.randomizedItems.length)
         const randomItem = this.randomizedItems[randomItemIndex]
+        this.answerObjectsOtherAttribute = randomItem[indexForTitles]
         this.setQuestionTitle(randomItem[indexForTitles])
         this.setAnswerTitle(randomItem[indexForTitles])
         this.answer = {

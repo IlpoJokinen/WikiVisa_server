@@ -155,10 +155,13 @@ function getWinterOlympicGames() {
 }
 
 function nobelLiterature() {
-  let query = `SELECT ?laurateLabel ?yearOfPriceReceived ?bookLabel ?birthYear ?deathYear  {
+  let query = `SELECT ?laurateLabel ?yearOfPriceReceived (SAMPLE(?bookLabel) AS ?bLabel) ?birthYearLabel ?deathYearLabel {
     ?laurate p:P166 ?p166stm .
     ?p166stm ps:P166 wd:Q37922; pq:P585 ?time .
-    ?laurate wdt:P800 ?book .
+    ?laurate wdt:P800 ?book.
+    ?book rdfs:label ?bookLabel.
+    FILTER(LANG(?bookLabel) = "en").
+    FILTER (!regex(?bookLabel, "(1944-1959)"))
     ?laurate wdt:P569 ?birth .
     BIND(YEAR(?birth) AS ?birthYear)
     ?laurate wdt:P570 ?death .
@@ -166,18 +169,36 @@ function nobelLiterature() {
     BIND(YEAR(?time) AS ?yearOfPriceReceived)
     OPTIONAL { ?p166stm pq:P6208 ?p6208 . FILTER(LANG(?p6208)='en') }
     SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-  }`
+  }
+  GROUP BY ?laurateLabel ?bLabel ?birthYearLabel ?deathYearLabel ?yearOfPriceReceived`
   return query
 }
 
+function countries() {
+  return `SELECT DISTINCT ?countryLabel ?capitalLabel ?area ?population ?continentLabel
+  WHERE {
+          ?country wdt:P31 wd:Q6256 ;
+                   rdfs:label ?countryLabel;
+                   FILTER(LANG(?countryLabel) = "en").
+                   FILTER (!regex(?countryLabel, "(netherlands|Egypt|Kazakhstan|united states|south africa)", "i") ) .
+          ?country wdt:P1082 ?population;
+                   wdt:P2046 ?area;
+                   wdt:P36 ?capital;
+                   wdt:P30 ?continent.
+        
+    SERVICE wikibase:label {
+      bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
+    }
+  }
+  GROUP BY ?countryLabel ?capitalLabel ?area ?population ?continentLabel`
+}
+
 let questionTypesWithQueries = [
-  {questionTypeStr: "area", query: encodeURI(getCountriesArea())},
-  {questionTypeStr: "population", query: encodeURI(getCountriesWithPopulation())},
   {questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
-  {questionTypeStr: "capital", query: encodeURI(getCountriesWithCapitals())},
   {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
   {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()},
-  {questionTypeStr: "literatureNobelist", query: encodeURI(nobelLiterature())}
+  {questionTypeStr: "literatureNobelist", query: encodeURI(nobelLiterature())},
+  {questionTypeStr: "country", query: encodeURI(countries())}
 ]
     
 module.exports =  questionTypesWithQueries

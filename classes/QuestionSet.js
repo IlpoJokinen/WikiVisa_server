@@ -1,31 +1,18 @@
-const AreaQuestion = require("./questionTypes/geoghraphy/Area")
-const PopulationQuestion = require("./questionTypes/geoghraphy/Population")
 const OfficialLanguageQuestion = require("./questionTypes/geoghraphy/OfficialLanguage")
-const CapitalQuestion = require("./questionTypes/geoghraphy/Capital")
 const NhlPointsQuestion = require("./questionTypes/sport/NhlPoints")
 const WinterOlympicYearQuestion = require("./questionTypes/sport/winterOlympicYear")
 const LiteratureNobelistQuestion = require("./questionTypes/culture/literatureNobelist")
+const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 
 //Datan tuleva muoto cachessa, olioiden key:sejä käytetään apuna kun randomisoidaan kysymyskategorioita ja kysymystyyppejä - cache vielä toistaiseksi eri muodossa, 
 //mutta tämä muutettu mockaamaan muotoa jo etukäteen
 let categories = {
-    geography: {
-	    area: {
-            data: [],
-            variants: []
-        }, 
+    geography: { 
         officialLanguage: {
             data: [],
             variants: []
-        }, 
-        population: {
-            data: [],
-            variants: []
-        }, 
-        capital: {
-            data: [],
-            variants: []
-        }
+        },
+        country: {}
     },
     sport: { 
         nhlPoints: {
@@ -89,14 +76,10 @@ class QuestionSet {
 
     createGeographyQuestion(questionType) {
         switch(questionType) {
-            case "area":
-                return new AreaQuestion()
-            case "capital":
-                return new CapitalQuestion()
-            case "population":
-                return new PopulationQuestion()
             case "officialLanguage":
                 return new OfficialLanguageQuestion()
+            case "country":
+                return new CountryQuestion()
         }
     }
 
