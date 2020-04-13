@@ -1,7 +1,7 @@
 const OfficialLanguageQuestion = require("./questionTypes/geoghraphy/OfficialLanguage")
 const NhlPointsQuestion = require("./questionTypes/sport/NhlPoints")
-const WinterOlympicYearQuestion = require("./questionTypes/sport/winterOlympicYear")
-const LiteratureNobelistQuestion = require("./questionTypes/culture/literatureNobelist")
+const WinterOlympicYearQuestion = require("./questionTypes/sport/WinterOlympicYear")
+const LiteratureNobelistQuestion = require("./questionTypes/culture/LiteratureNobelist")
 const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
 
