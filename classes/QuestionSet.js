@@ -3,6 +3,7 @@ const NhlPointsQuestion = require("./questionTypes/sport/NhlPoints")
 const WinterOlympicYearQuestion = require("./questionTypes/sport/winterOlympicYear")
 const LiteratureNobelistQuestion = require("./questionTypes/culture/literatureNobelist")
 const CountryQuestion = require("./questionTypes/geoghraphy/Country")
+const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
 
 //Datan tuleva muoto cachessa, olioiden key:sejä käytetään apuna kun randomisoidaan kysymyskategorioita ja kysymystyyppejä - cache vielä toistaiseksi eri muodossa, 
 //mutta tämä muutettu mockaamaan muotoa jo etukäteen
@@ -12,7 +13,8 @@ let categories = {
             data: [],
             variants: []
         },
-        country: {}
+        country: {},
+        usStates:{}
     },
     sport: { 
         nhlPoints: {
@@ -80,6 +82,8 @@ class QuestionSet {
                 return new OfficialLanguageQuestion()
             case "country":
                 return new CountryQuestion()
+            case "usStates":
+                return new UsStatesQuestion()
         }
     }
 

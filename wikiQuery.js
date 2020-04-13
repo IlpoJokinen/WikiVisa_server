@@ -1,10 +1,16 @@
 function getUsStates() {    
-    return `SELECT ?stateLabel WHERE {
-        ?state wdt:P31 wd:Q35657 .
-        SERVICE wikibase:label {
-            bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
+    return `SELECT ?stateLabel ?areaLabel ?nickname
+    WHERE {
+            ?state wdt:P31 wd:Q35657 .
+            ?state wdt:P1449 ?nickname .
+            ?state wdt:P2046 ?area.
+                   FILTER (!regex(?nickname, "(الولاية الذهبية|Y Dalaith Aur|Old Line State|Talaith y Grand Canyon)", "i") ).
+      
+            SERVICE wikibase:label {
+                bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
+            }
         }
-    }`
+        GROUP BY ?stateLabel ?areaLabel ?nickname`
 }
 
 //Note return countries several times if country has several official lannguages i.e Finland return Finnish and Swedish
@@ -198,7 +204,8 @@ let questionTypesWithQueries = [
   {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
   {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()},
   {questionTypeStr: "literatureNobelist", query: encodeURI(nobelLiterature())},
-  {questionTypeStr: "country", query: encodeURI(countries())}
+  {questionTypeStr: "country", query: encodeURI(countries())},
+  {questionTypeStr: "usStates", query: encodeURI(getUsStates())}
 ]
     
 module.exports =  questionTypesWithQueries
