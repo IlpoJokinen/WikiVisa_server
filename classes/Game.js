@@ -129,29 +129,21 @@ module.exports = (io) => class Game {
         })
     }
     getQuestions() {
-        let questions = new QuestionSet(["geography"], this.numberOfQuestions)
+        let questions = new QuestionSet(["sport", "geography"], this.numberOfQuestions)
         return questions.get()
     }
     
-    sortAnswerTimeArray() {
-        this.answerOrder = this.answerOrder.sort((a, b) => a.time - b.time)
-        this.answerOrder = this.answerOrder.slice(0, this.players.length)
-        this.answerOrder = this.answerOrder.sort((a, b) => b.time - a.time)
-    }
-
     checkPointsOfTheRound(){
-        this.sortAnswerTimeArray()
         const correctAnswerOftheRound = this.getCorrectAnswer()
         this.players.map(p => {
             p.ready = false
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
-                p.points += 10
-                let extraPoints = Array.from(Array(this.players.length).keys())
-                for(let i = 0; i < this.answerOrder.length; i++) {
-                    if (p.gamertag === this.answerOrder[i].gamertag) {
-                        p.points += extraPoints[i] 
-                    }
+                let extraPoints = Math.abs(this.answerOrder.findIndex(obj => obj.gamertag === p.gamertag) - 5)
+                if(extraPoints <= 5) {
+                    p.points += 10 + extraPoints
+                } else {
+                    p.points += 10
                 }
             } else {
                 if(this.losePoints && p.points >= 5) {
@@ -217,7 +209,7 @@ module.exports = (io) => class Game {
     setAnswerAndPlayerReady(data) {
         let player = this.getPlayerByGametag(data.gamertag, data.roomCode)
         if(player.constructor === Object) {
-            this.answerOrder.push({gamertag: data.gamertag, time: data.time})
+            this.handleAnswerOrder(data)
             delete data.gamertag
             delete data.game_id
             player.answers.push(data)
@@ -227,6 +219,15 @@ module.exports = (io) => class Game {
             }
             const playersWithoutAnswers = this.playersWithoutAnswers()
             io.in(this.roomCode).emit("send players", playersWithoutAnswers)
+        }
+    }
+
+    handleAnswerOrder(data) {
+        let correctAnswerOfTheRound = this.getCorrectAnswer()
+        if(correctAnswerOfTheRound.value === data.answer.value){
+            this.answerOrder.push({gamertag: data.gamertag, time: data.time})
+            this.answerOrder = this.answerOrder.sort((a, b) => a.time - b.time)
+            this.answerOrder = this.answerOrder.slice(0, 5)
         }
     }
 
