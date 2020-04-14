@@ -1,5 +1,5 @@
 function getUsStates() {    
-    return `SELECT ?stateLabel ?areaLabel ?nickname
+    return `SELECT ?stateLabel ?areaLabel ?nicknameLabel
     WHERE {
             ?state wdt:P31 wd:Q35657 .
             ?state wdt:P1449 ?nickname .
@@ -10,7 +10,7 @@ function getUsStates() {
                 bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
             }
         }
-        GROUP BY ?stateLabel ?areaLabel ?nickname`
+        GROUP BY ?stateLabel ?areaLabel ?nicknameLabel`
 }
 
 //Note return countries several times if country has several official lannguages i.e Finland return Finnish and Swedish
@@ -131,19 +131,24 @@ function getPeriodicTable(){
 }
 
 function getNhlPlayersWithPointsMoreThanTwoHundred (){
-    let query =  `SELECT DISTINCT ?itemLabel ?pointsLabel 
+    let query =  `SELECT DISTINCT ?playerLabel ?pointsLabel ?goalsLabel ?assistsLabel
     WHERE 
     {
-      ?item wdt:P31 wd:Q5 .
-      ?item wdt:P641 wd:Q41466 .
-      ?item wdt:P118 wd:Q1215892 .
-      
-      ?item wdt:P6544 ?points .
-      ?item wdt:P569 ?dob .
-      FILTER (?points > 200 && YEAR(?dob) > 1980)
+      ?player wdt:P31 wd:Q5 ;
+              rdfs:label ?playerLabel.
+              FILTER(LANG(?playerLabel) = "en").
+              FILTER (!regex(?playerLabel, "(Jamie McGinn|Сем Райнгарт|Цукер, Джейсон|Corey Perry)", "i") ).
+      ?player wdt:P641 wd:Q41466 .
+      ?player wdt:P118 wd:Q1215892 .
+      ?player wdt:P6544 ?points .
+      ?player wdt:P6509 ?goals .
+      ?player wdt:P6545 ?assists .
+      ?player wdt:P569 ?dob .
+      FILTER (?points > 200 && YEAR(?dob) > 1980) .
       SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-    }`
-    let encoded = "SELECT%20DISTINCT%20%3FitemLabel%20%3FpointsLabel%20%3FgoalsLabel%20%3FassistsLabel%20%0A%20%20%20%20WHERE%20%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP31%20wd%3AQ5%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP641%20wd%3AQ41466%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP118%20wd%3AQ1215892%20.%0A%20%20%20%20%20%20%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP6544%20%3Fpoints%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP6545%20%3Fassists%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP6509%20%3Fgoals%20.%0A%20%20%20%20%20%20%3Fitem%20wdt%3AP569%20%3Fdob%20.%0A%20%20%20%20%20%20FILTER%20%28%3Fpoints%20%3E%20200%20%26%26%20YEAR%28%3Fdob%29%20%3E%201980%29%0A%20%20%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%20%20%7D"
+   }
+    GROUP BY ?playerLabel ?pointsLabel ?goalsLabel ?assistsLabel`
+    let encoded = "SELECT%20DISTINCT%20%3FplayerLabel%20%3FpointsLabel%20%3FgoalsLabel%20%3FassistsLabel%0A%20%20%20%20WHERE%20%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP31%20wd%3AQ5%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20rdfs%3Alabel%20%3FplayerLabel.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20FILTER%28LANG%28%3FplayerLabel%29%20%3D%20%22en%22%29.%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20FILTER%20%28%21regex%28%3FplayerLabel%2C%20%22%28Jamie%20McGinn%7C%D0%A1%D0%B5%D0%BC%20%D0%A0%D0%B0%D0%B9%D0%BD%D0%B3%D0%B0%D1%80%D1%82%7C%D0%A6%D1%83%D0%BA%D0%B5%D1%80%2C%20%D0%94%D0%B6%D0%B5%D0%B9%D1%81%D0%BE%D0%BD%7CCorey%20Perry%29%22%2C%20%22i%22%29%20%29.%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP641%20wd%3AQ41466%20.%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP118%20wd%3AQ1215892%20.%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP6544%20%3Fpoints%20.%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP6509%20%3Fgoals%20.%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP6545%20%3Fassists%20.%0A%20%20%20%20%20%20%3Fplayer%20wdt%3AP569%20%3Fdob%20.%0A%20%20%20%20%20%20FILTER%20%28%3Fpoints%20%3E%20200%20%26%26%20YEAR%28%3Fdob%29%20%3E%201980%29%20.%0A%20%20%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%20%7D%0AGROUP%20BY%20%3FplayerLabel%20%3FpointsLabel%20%3FgoalsLabel%20%3FassistsLabel"
     return encoded
 }
 
@@ -161,27 +166,27 @@ function getWinterOlympicGames() {
 }
 
 function nobelLiterature() {
-  let query = `SELECT ?laurateLabel ?yearOfPriceReceived (SAMPLE(?bookLabel) AS ?bLabel) ?birthYearLabel ?deathYearLabel {
+  let query = `SELECT ?laurateLabel  (SAMPLE(?bLabel) AS ?bookLabel) ?birthYearLabel ?deathYearLabel ?yearOfPrizeReceivedLabel {
     ?laurate p:P166 ?p166stm .
     ?p166stm ps:P166 wd:Q37922; pq:P585 ?time .
-    ?laurate wdt:P800 ?book.
-    ?book rdfs:label ?bookLabel.
-    FILTER(LANG(?bookLabel) = "en").
-    FILTER (!regex(?bookLabel, "(1944-1959)"))
+    ?laurate wdt:P800 ?b.
+    ?b rdfs:label ?bLabel.
+    FILTER(LANG(?bLabel) = "en").
+    FILTER (!regex(?bLabel, "(1944-1959|O priči i pričanju|Bhanusimha Thakurer Padabali)"))
     ?laurate wdt:P569 ?birth .
     BIND(YEAR(?birth) AS ?birthYear)
     ?laurate wdt:P570 ?death .
     BIND(YEAR(?death) AS ?deathYear)
-    BIND(YEAR(?time) AS ?yearOfPriceReceived)
+    BIND(YEAR(?time) AS ?yearOfPrizeReceived)
     OPTIONAL { ?p166stm pq:P6208 ?p6208 . FILTER(LANG(?p6208)='en') }
     SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
   }
-  GROUP BY ?laurateLabel ?bLabel ?birthYearLabel ?deathYearLabel ?yearOfPriceReceived`
+  GROUP BY ?laurateLabel ?bookLabel ?birthYearLabel ?deathYearLabel ?yearOfPrizeReceivedLabel`
   return query
 }
 
 function countries() {
-  return `SELECT DISTINCT ?countryLabel ?capitalLabel ?area ?population ?continentLabel
+  return `SELECT DISTINCT ?countryLabel ?capitalLabel ?areaLabel ?populationLabel ?continentLabel
   WHERE {
           ?country wdt:P31 wd:Q6256 ;
                    rdfs:label ?countryLabel;
@@ -196,7 +201,7 @@ function countries() {
       bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" .
     }
   }
-  GROUP BY ?countryLabel ?capitalLabel ?area ?population ?continentLabel`
+  GROUP BY ?countryLabel ?capitalLabel ?areaLabel ?populationLabel ?continentLabel`
 }
 
 let questionTypesWithQueries = [
