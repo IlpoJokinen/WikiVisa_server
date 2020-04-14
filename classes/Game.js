@@ -35,6 +35,7 @@ module.exports = (io) => class Game {
         this.players = []
         this.correctAnswers = []
         this.ready = false
+        this.answerOrder = []
         this.init()
     }
     init() {
@@ -128,23 +129,37 @@ module.exports = (io) => class Game {
         })
     }
     getQuestions() {
-        let questions = new QuestionSet(["geography","sport", "culture"], this.numberOfQuestions)
+        let questions = new QuestionSet(["geography"], this.numberOfQuestions)
         return questions.get()
     }
     
+    sortAnswerTimeArray() {
+        this.answerOrder = this.answerOrder.sort((a, b) => a.time - b.time)
+        this.answerOrder = this.answerOrder.slice(0, this.players.length)
+        this.answerOrder = this.answerOrder.sort((a, b) => b.time - a.time)
+    }
+
     checkPointsOfTheRound(){
+        this.sortAnswerTimeArray()
         const correctAnswerOftheRound = this.getCorrectAnswer()
         this.players.map(p => {
             p.ready = false
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
                 p.points += 10
+                let extraPoints = Array.from(Array(this.players.length).keys())
+                for(let i = 0; i < this.answerOrder.length; i++) {
+                    if (p.gamertag === this.answerOrder[i].gamertag) {
+                        p.points += extraPoints[i] 
+                    }
+                }
             } else {
                 if(this.losePoints && p.points >= 5) {
                     p.points -= 5
                 }
             }
         })
+        this.answerOrder = []
     }
 
     getCorrectAnswer() {
@@ -191,15 +206,6 @@ module.exports = (io) => class Game {
         this.players.push(player)
     }
 
-    submitAnswer(data, player) {
-        let existingAnswer = this.getAnswerByQuestionId(player.answers, data.question_id)
-        if(existingAnswer.constructor === Object) {
-            existingAnswer.answer = data.answer // Answer already exists, so we are going to update it
-        } else {
-            player.answers.push(data) // Create a new answer object
-        }
-    }
-
     checkIfAllPlayersReady() {
         return this.players.filter(p => p.ready).length === this.players.length
     }
@@ -211,9 +217,10 @@ module.exports = (io) => class Game {
     setAnswerAndPlayerReady(data) {
         let player = this.getPlayerByGametag(data.gamertag, data.roomCode)
         if(player.constructor === Object) {
+            this.answerOrder.push({gamertag: data.gamertag, time: data.time})
             delete data.gamertag
             delete data.game_id
-            this.submitAnswer(data, player)
+            player.answers.push(data)
             player.ready = true
             if(this.checkIfAllPlayersReady()){
                 this.questionCounter = 0
