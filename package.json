@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "jenkinsTest": "start-server-and-test start http://localhost:3000 ./node_modules/.bin/cypress run",
+    "jenkinsTest": "start-server-and-test start 3001 cypressRunTests",
     "test": "./node_modules/.bin/cypress open",
     "start": "node index.js",
+    "cypressRunTests": "./node_modules/.bin/cypress run",
     "watch": "nodemon index.js"
   },
   "author": "",
