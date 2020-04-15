@@ -17,10 +17,11 @@ let db = createMemoryDatabase()
 // Example query
 db.all("SELECT * FROM categories INNER JOIN questions ON questions.category_id = categories.id INNER JOIN variants ON variants.question_id = questions.id INNER JOIN variant_datasets ON variant_datasets.id = variants.dataset", [], (err, rows) => {
     if (err) {
+        //rs
         console.log(err)
     }
     rows.forEach((row) => {
-        console.log(row)
+        //console.log(row)
     })
 })
 
@@ -36,7 +37,7 @@ function createMemoryDatabase() {
                 query += ');'
                 mdb.run(query, (err) => {
                     if(err) { 
-                        console.log(err)
+                        //console.log(err)
                     }
                 })
             }
