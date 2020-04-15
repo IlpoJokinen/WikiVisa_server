@@ -7,7 +7,7 @@
     "jenkinsTest": "start-server-and-test start 3001 cypressRunTests",
     "test": "./node_modules/.bin/cypress open",
     "start": "node index.js",
-    "cypressRunTests": "./node_modules/.bin/cypress run --headless --record false",
+    "cypressRunTests": "./node_modules/.bin/cypress run --headless",
     "watch": "nodemon index.js"
   },
   "author": "",
