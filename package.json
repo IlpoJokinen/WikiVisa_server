@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "jenkinsTest": "start-server-and-test start http://localhost:3000 ./node_modules/.bin/cypress run",
     "test": "./node_modules/.bin/cypress open",
     "start": "node index.js",
     "watch": "nodemon index.js"
@@ -20,6 +21,7 @@
   "devDependencies": {
     "cypress": "^4.1.0",
     "nodemon": "^2.0.2",
-    "sqlite3": "^4.1.1"
+    "sqlite3": "^4.1.1",
+    "start-server-and-test": "^1.11.0"
   }
 }

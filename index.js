@@ -15,7 +15,7 @@ let db = createMemoryDatabase()
 
 
 // Example query
-db.all("SELECT categories.category_pretty_name, questions.question_pretty_name FROM categories INNER JOIN questions ON questions.category_id = categories.id", [], (err, rows) => {
+db.all("SELECT * FROM categories INNER JOIN questions ON questions.category_id = categories.id INNER JOIN variants ON variants.question_id = questions.id INNER JOIN variant_datasets ON variant_datasets.id = variants.dataset", [], (err, rows) => {
     if (err) {
         console.log(err)
     }
