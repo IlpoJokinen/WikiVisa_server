@@ -2,7 +2,6 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const app = express()
-app.use(express.static('./client/build'))
 const socket = require('socket.io')
 const port = process.env.PORT || 3001
 const utils = require('./Utilities')
@@ -10,6 +9,9 @@ const games = []
 let game_id = 0
 const { connectToDatabase } = require("./db")
 const { fetchAllTheDataToCache } = require("./fetchData")
+
+app.use(express.static('./client'))
+app.use('/reports', express.static('./reports'))
 
 let conn = connectToDatabase()
 
