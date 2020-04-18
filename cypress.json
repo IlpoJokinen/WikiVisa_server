@@ -1,5 +1,11 @@
 {
     "baseUrl": "http://localhost:3001",
     "video": false,
-    "reporter": "mochawesome"
+    "reporter": "mochawesome",
+    "reporterOptions": {
+        "reportDir": "cypress/reports/partials",
+        "overwrite": false,
+        "html": false,
+        "json": true
+    }
 }
