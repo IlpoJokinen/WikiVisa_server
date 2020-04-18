@@ -15,14 +15,16 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mochawesome": "^6.1.0",
     "node-cache": "^5.1.0",
     "node-fetch": "^2.6.0",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "cypress": "^4.1.0",
-    "mocha": "^7.1.1",
+    "mocha": "5.2.0",
+    "mochawesome": "4.1.0",
+    "mochawesome-merge": "2.0.1",
+    "mochawesome-report-generator": "4.0.1",
     "nodemon": "^2.0.2",
     "start-server-and-test": "^1.11.0"
   }
