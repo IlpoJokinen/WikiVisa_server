@@ -1,52 +1,26 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-const fs = require('fs')
 const app = express()
-app.use(express.static('./client/build'))
 const socket = require('socket.io')
-const sqlite3 = require('sqlite3').verbose();
 const port = process.env.PORT || 3001
 const utils = require('./Utilities')
 const games = []
 let game_id = 0
+const { connectToDatabase } = require("./db")
 const { fetchAllTheDataToCache } = require("./fetchData")
 
-let db = createMemoryDatabase()
+app.use(express.static('./client'))
+app.use('/reports', express.static('./reports'))
 
+let conn = connectToDatabase()
 
-// Example query
-db.all("SELECT * FROM categories INNER JOIN questions ON questions.category_id = categories.id INNER JOIN variants ON variants.question_id = questions.id INNER JOIN variant_datasets ON variant_datasets.id = variants.dataset", [], (err, rows) => {
-    if (err) {
-        //rs
-        console.log(err)
-    }
-    rows.forEach((row) => {
-        //console.log(row)
-    })
+conn.query('SELECT * FROM questions', function(err, results, fields) {
+    console.log(results)
 })
-
-function createMemoryDatabase() {
-    const dataSql = fs.readFileSync('./schema.sql').toString()
-    const dataArr = dataSql.split(');')
-    let mdb = new sqlite3.Database(':memory:')
-    mdb.serialize(() => {
-        mdb.run('PRAGMA foreign_keys=OFF;')
-        mdb.run('BEGIN TRANSACTION;')
-        dataArr.forEach((query) => {
-            if(query) {
-                query += ');'
-                mdb.run(query, (err) => {
-                    if(err) { 
-                        //console.log(err)
-                    }
-                })
-            }
-        });
-        mdb.run('COMMIT;')
-    })
-    return mdb
-}
-
+.catch(console.log)
+.then(() => conn.end())
+ 
 startServer()
 
 async function startServer() {
@@ -187,3 +161,4 @@ async function startServer() {
         })
     })
 }
+
