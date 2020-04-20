@@ -204,13 +204,42 @@ function countries() {
   GROUP BY ?countryLabel ?capitalLabel ?areaLabel ?populationLabel ?continentLabel`
 }
 
+function wars() {
+  return `SELECT ?warLabel ?startYear ?endYear ?partOfLabel
+  WHERE 
+  {
+    ?war wdt:P31 wd:Q198;
+         rdfs:label ?warLabel.
+         FILTER(LANG(?warLabel) = "en").
+    ?war p:P361 ?partOfStream .
+    OPTIONAL{ ?war wdt:P361 ?partOf }
+    
+    ?partOf rdfs:label ?partOfLabel.
+        FILTER(LANG(?partOfLabel) = "en").
+    ?war wdt:P580 ?sYear .
+    BIND(YEAR(?sYear) AS ?startYear)
+    ?war wdt:P582 ?eYear .
+    BIND(YEAR(?eYear) AS ?endYear)
+    ?war wdt:P585 ?pit.
+    FILTER(YEAR(?sYear) > 1900).
+    FILTER(YEAR(?pit) > 1900).
+     FILTER (!regex(?warLabel, "(.*[0-9].*|Pig War|Contra insurgency|Albanian resistance during World War II|World War I outside Europe|Romania during World War I|World War II in Yugoslavia|South-East Asian theatre of World War II)", "i") ).
+    FILTER (regex(?warLabel, "(war|conflict)", "i")).
+    FILTER (!regex(?partOfLabel, "(Eastern Front)", "i")).
+  
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+  }
+  GROUP BY ?warLabel ?startYear ?endYear ?partOfLabel `
+}
+
 let questionTypesWithQueries = [
   {questionTypeStr: "officialLanguage", query: encodeURI(getCountriesWithOfficialLanguages())},
   {questionTypeStr: "nhlPlayersPoints", query: getNhlPlayersWithPointsMoreThanTwoHundred()},
   {questionTypeStr: "winterOlympics", query: getWinterOlympicGames()},
   {questionTypeStr: "literatureNobelist", query: encodeURI(nobelLiterature())},
   {questionTypeStr: "country", query: encodeURI(countries())},
-  {questionTypeStr: "usStates", query: encodeURI(getUsStates())}
+  {questionTypeStr: "usStates", query: encodeURI(getUsStates())},
+  {questionTypeStr: "war", query: encodeURI(wars())}
 ]
     
 module.exports =  questionTypesWithQueries

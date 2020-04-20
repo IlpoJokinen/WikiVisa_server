@@ -4,6 +4,7 @@ const WinterOlympicYearQuestion = require("./questionTypes/sport/WinterOlympicYe
 const LiteratureNobelistQuestion = require("./questionTypes/culture/LiteratureNobelist")
 const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
+const WarQuestion = require("./questionTypes/history/War")
 
 //Datan tuleva muoto cachessa, olioiden key:sejä käytetään apuna kun randomisoidaan kysymyskategorioita ja kysymystyyppejä - cache vielä toistaiseksi eri muodossa, 
 //mutta tämä muutettu mockaamaan muotoa jo etukäteen
@@ -28,6 +29,12 @@ let categories = {
     },
     culture: { 
         literatureNobelist: {
+            data: [],
+            variants: []
+        }
+    },
+    history: {
+        war:{
             data: [],
             variants: []
         }
@@ -57,6 +64,9 @@ class QuestionSet {
                     createdQuestion = this.createSportQuestion(randomizedQuestionType); break;
                 case "culture":
                     createdQuestion = this.createCultureQuestion(randomizedQuestionType); break;   
+                case "history":
+                    createdQuestion = this.createHistoryQuestion(randomizedQuestionType); break;   
+
             }
             createdQuestion.id = i;
             this.questions.push(createdQuestion)
@@ -100,6 +110,13 @@ class QuestionSet {
         switch(questionType) {
             case "literatureNobelist": 
                 return new LiteratureNobelistQuestion()
+        }
+    }
+
+    createHistoryQuestion(questionType) {
+        switch(questionType) {
+            case "war": 
+                return new WarQuestion()
         }
     }
 
