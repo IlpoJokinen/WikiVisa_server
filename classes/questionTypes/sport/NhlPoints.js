@@ -4,7 +4,7 @@ class NhlPoints extends Question{
     //[{0: nimi, 1: pisteet, 2: maalit, 3: syötöt}] nodeCachessa oleva setti
     constructor(){
         super()
-        this.data = this.nodeCache.get("nhlPlayersPoints")
+        this.data = this.nodeCache.get("nhlPoints")
         this.variants = [
             {
                 "questionTitle": "Who of these NHL players has scored the most points",

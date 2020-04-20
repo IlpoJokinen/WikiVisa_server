@@ -7,25 +7,18 @@ const port = process.env.PORT || 3001
 const utils = require('./Utilities')
 const games = []
 let game_id = 0
-const { connectToDatabase } = require("./db")
-const { fetchAllTheDataToCache } = require("./fetchData")
+const { fetchFromDb } = require("./fetchFromDb")
+const { fetchFromWikiData } = require("./fetchWikiData")
+
 
 app.use(express.static('./client'))
 app.use('/reports', express.static('./reports'))
-
-let conn = connectToDatabase()
-
-conn.query('SELECT * FROM questions', function(err, results, fields) {
-    console.log(results)
-})
-.catch(console.log)
-.then(() => conn.end())
  
 startServer()
 
 async function startServer() {
-    
-    //await fetchAllTheDataToCache()
+    await fetchFromDb()
+    await fetchFromWikiData()
     const server = app.listen(port, () => console.log(`WikiVisa app listening on port ${port}!`))
         
     app.use(cors())

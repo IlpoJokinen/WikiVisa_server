@@ -1,25 +1,23 @@
 const fetch = require("node-fetch");
-const NodeCache = require( "node-cache" );
-const nodeCache = new NodeCache();
-
-const questionTypesWithQueries = require('./wikiQuery.js')
+const { nodeCache } = require("./fetchFromDb")
 
 const sleep = ms => {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-async function fetchAllTheDataToCache () {
-    for(let i = 0; i < questionTypesWithQueries.length; i++) {
-        await init(questionTypesWithQueries[i].questionTypeStr, questionTypesWithQueries[i].query)
+async function fetchFromWikiData () {
+    const questionsWithQueries = nodeCache.get("questionsWithQueries")
+    for(let i = 0; i < questionsWithQueries.length; i++) {
+        await init(questionsWithQueries[i].question_name, encodeURI(questionsWithQueries[i].query))
         await sleep(1500)
     }
 }
 
-async function init(questionTypeStr, query) {
+async function init(questionName, query) {
     try {
         let data = await fetchData(query)
         let filteredData = filterData(data)
-        nodeCache.set(questionTypeStr, filteredData)
+        nodeCache.set(questionName, filteredData)
     } catch(e) {
         console.log(e)
     }
@@ -46,4 +44,4 @@ function filterData(data) {
     return filteredData
 }
 
-module.exports = { fetchAllTheDataToCache, nodeCache }
+module.exports = { fetchFromWikiData, nodeCache }

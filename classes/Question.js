@@ -1,4 +1,4 @@
-const { nodeCache } = require("../fetchData")
+const { nodeCache } = require("../fetchFromDb")
 
 class Question {
 

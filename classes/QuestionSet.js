@@ -5,41 +5,9 @@ const LiteratureNobelistQuestion = require("./questionTypes/culture/LiteratureNo
 const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
 const WarQuestion = require("./questionTypes/history/War")
+const { nodeCache } = require("../fetchFromDb")
 
-//Datan tuleva muoto cachessa, olioiden key:sejä käytetään apuna kun randomisoidaan kysymyskategorioita ja kysymystyyppejä - cache vielä toistaiseksi eri muodossa, 
-//mutta tämä muutettu mockaamaan muotoa jo etukäteen
-let categories = {
-    geography: { 
-        officialLanguage: {
-            data: [],
-            variants: []
-        },
-        country: {},
-        usStates:{}
-    },
-    sport: { 
-        nhlPoints: {
-            data: [],
-            variants: []
-        }, 
-        winterOlympicYear: {
-            data: [],
-            variants: []
-        }
-    },
-    culture: { 
-        literatureNobelist: {
-            data: [],
-            variants: []
-        }
-    },
-    history: {
-        war:{
-            data: [],
-            variants: []
-        }
-    }
-}
+let cacheObject = nodeCache.get("data")
 
 class QuestionSet {
 
@@ -54,9 +22,9 @@ class QuestionSet {
         for(let i = 0; i < this.numberOfQuestions; i++){
             let createdQuestion
             let randomizedCategory = this.randomizeCategory()
-            let questionTypes = Object.keys(categories[randomizedCategory])
+            let questionTypes = Object.keys(cacheObject[randomizedCategory])
             let randomizedQuestionType = this.randomizeQuestionType(questionTypes)
-            
+
             switch(randomizedCategory){
                 case "geography": 
                     createdQuestion = this.createGeographyQuestion(randomizedQuestionType); break;

@@ -4,7 +4,7 @@ class WinterOlympicYear extends Question{
     
     constructor(){
         super()
-        this.data = this.nodeCache.get("winterOlympics")
+        this.data = this.nodeCache.get("winterOlympicYear")
         this.variants = [
             {
                 "questionTitle": "In which country was held #",
