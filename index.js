@@ -10,7 +10,6 @@ let game_id = 0
 const { fetchFromDb } = require("./fetchFromDb")
 const { fetchFromWikiData } = require("./fetchWikiData")
 
-
 app.use(express.static('./client'))
 app.use('/reports', express.static('./reports'))
  

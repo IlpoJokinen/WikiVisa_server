@@ -3,21 +3,24 @@ const NodeCache = require( "node-cache" );
 const nodeCache = new NodeCache();
 let conn = connectToDatabase()
 let cacheObject = {}
-let ready = false
 
 async function fetchFromDb(){
     let data = await fetchAllQuestionData()
-    let questionsWithQueries = await fetchQuestionsWithQueries()
-    createCacheObjects(data, questionsWithQueries)
+    createCacheObjects(data)
 }
 
-function createCacheObjects(data, questionsWithQueries){
+function createCacheObjects(data){
+    setCategoryPrettyNames(data)
     setCategories(data)
     setQuestions(data)
     setVariants(data)
-    nodeCache.set("questionsWithQueries", questionsWithQueries)
     nodeCache.set("data", cacheObject)
 }   
+
+function setCategoryPrettyNames(data) {
+    let categoryPrettyNames = new Set(data.map(row => row.category_pretty_name))
+    nodeCache.set("categoryPrettyNames", categoryPrettyNames)
+}
 
 function setCategories(data) {
     let categories = new Set(data.map(row => row.category_name))
@@ -43,7 +46,7 @@ function setVariants(data){
 }
 
 async function fetchAllQuestionData() {
-    let all = await conn.query(`SELECT variants.id, questions.question_name, questions.query, variants.dataset, variants.answer_title, variants.question_title, variants.running_number, variant_datasets.dataset, categories.category_name 
+    let all = await conn.query(`SELECT variants.id, questions.question_name, questions.query, variants.dataset, variants.answer_title, variants.question_title, variants.running_number, variant_datasets.dataset, categories.category_name, categories.category_pretty_name 
     FROM variants 
     INNER JOIN variant_datasets 
     ON variants.dataset = variant_datasets.id 
@@ -52,13 +55,6 @@ async function fetchAllQuestionData() {
     ON questions.category_id = categories.id`
     ).then(([rows,fields]) => rows)
     return new Promise(resolve => resolve(all))
-}
-
-async function fetchQuestionsWithQueries() {
-    let questionsWithQueries = await conn.query(`SELECT questions.question_name, questions.query FROM questions`)
-        .then(([rows]) => rows)
-
-    return new Promise(resolve => resolve(questionsWithQueries))
 }
 
 module.exports = { fetchFromDb, nodeCache }

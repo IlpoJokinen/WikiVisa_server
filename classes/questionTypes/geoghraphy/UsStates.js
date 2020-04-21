@@ -1,27 +1,12 @@
 const Question = require("../../Question")
 
 class UsStates extends Question{
+    
     constructor(){
         super()
-        //{ '0': 'Vermont', '1': '24923', '2': 'The Green Mountain State' } ]
-        this.data = this.nodeCache.get("usStates")
-        this.variants = [
-            {
-                "questionTitle": "Which of these U.S states is the largest in area",
-                "answerTitle": "The Largest state is ",
-                "attributesForDataSet": [0, 1]
-            },
-            {
-                "questionTitle": "What is the nickname of #",
-                "answerTitle": "The nickname of # is ",
-                "attributesForDataSet": [0, 2]
-            },
-            {
-                "questionTitle": "Which U.S state's nickname is #",
-                "answerTitle": "#'s nickname is ",
-                "attributesForDataSet": [0, 2]
-            }
-         ]
+        this.data = this.nodeCache.get("data").geography.usStates.data
+        this.variants = this.nodeCache.get("data").geography.usStates.variants
+
         this.random = Math.floor(Math.random() * this.variants.length)
         this.reconstructDataSetForTheVariant()
         this.chooseAnswerSetter()

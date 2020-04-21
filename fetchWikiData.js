@@ -6,20 +6,32 @@ const sleep = ms => {
 }
 
 async function fetchFromWikiData () {
-    const questionsWithQueries = nodeCache.get("questionsWithQueries")
-    for(let i = 0; i < questionsWithQueries.length; i++) {
-        await init(questionsWithQueries[i].question_name, encodeURI(questionsWithQueries[i].query))
+    let cacheObject = nodeCache.get("data")
+    let keys = Object.keys(cacheObject)
+    for(let i = 0; i < keys.length; i++) {
+        let categoryObject = cacheObject[keys[i]]
+        let categoryName = keys[i]
+        await fetchQuestionDataByCategory(categoryObject, categoryName)
         await sleep(1500)
     }
+    console.log("cacheObject", nodeCache.get("data"))
+    console.log("prettyNames for categories", nodeCache.get("categoryPrettyNames"))
 }
 
-async function init(questionName, query) {
-    try {
-        let data = await fetchData(query)
-        let filteredData = filterData(data)
-        nodeCache.set(questionName, filteredData)
-    } catch(e) {
-        console.log(e)
+async function fetchQuestionDataByCategory(categoryObject, categoryName) {
+    let keys = Object.keys(categoryObject)
+    for(let i = 0; i < keys.length; i++){
+        let query = categoryObject[keys[i]].query
+        try {
+            let data = await fetchData(encodeURI(query))
+            let filteredData = filterData(data)
+            let cacheObject = nodeCache.take("data")
+            cacheObject[categoryName][keys[i]].data = filteredData
+            delete cacheObject[categoryName][keys[i]].query
+            nodeCache.set("data", cacheObject)
+        } catch(e) {
+            console.log(e)
+        }
     }
 }
 
@@ -33,14 +45,12 @@ function filterData(data) {
     let filteredData = []
     data.forEach(row => { 
         let obj = {}, keys = Object.keys(row)
-        if(true) {//keys.length === 2
-            keys.forEach((key, i) => {
-                obj[i] = row[key].value
-            }) 
-            filteredData.push(obj)
+        keys.forEach((key, i) => {
+            obj[key] = row[key].value
+        }) 
+        filteredData.push(obj)
         }
-    })
-    console.log(filteredData)
+    )
     return filteredData
 }
 

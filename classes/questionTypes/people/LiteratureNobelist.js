@@ -1,12 +1,12 @@
 const Question = require("../../Question")
 
-class War extends Question{
-
+class LiteratureNobelist extends Question{
+    
     constructor(){
         super()
-        this.data = this.nodeCache.get("data").history.war.data
-        this.variants = this.nodeCache.get("data").history.war.variants
-        
+        this.data = this.nodeCache.get("data").people.literatureNobelist.data
+        this.variants = this.nodeCache.get("data").people.literatureNobelist.variants
+
         this.random = Math.floor(Math.random() * this.variants.length)
         this.reconstructDataSetForTheVariant()
         this.chooseAnswerSetter()
@@ -20,12 +20,13 @@ class War extends Question{
         this.choices = this.choiceFilterer()
         this.setCorrectAnswer()
     }
+
     chooseAnswerSetter() {
-        this.setCorrectAnswer = this.random === 0 ? () => this.setCorrectAnswerMaxOrMin(1) : this.random === 4 ? () => this.setCorrectAnswerRandom(0, 1) : () => this.setCorrectAnswerRandom(1, 0) 
+        this.setCorrectAnswer = [0, 2, ,3, 4].includes(this.random) ? () => this.setCorrectAnswerRandom(1, 0) : () => this.setCorrectAnswerRandom(0, 1)
     }
     chooseChoiceFilterer() {
-        this.choiceFilterer = [0, 4].includes(this.random) ? () => this.filterChoices(0) : () => this.filterChoices(1)
+        this.choiceFilterer = this.random === 1 ? () => this.filterChoices(0) : () => this.filterChoices(1)
     }
 }
 
-module.exports = War
+module.exports = LiteratureNobelist

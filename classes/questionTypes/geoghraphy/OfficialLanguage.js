@@ -4,18 +4,11 @@ class OfficialLanguage extends Question {
     
     constructor(){
         super()
-        this.data = this.nodeCache.get("officialLanguage")
-        this.variants = [
-            {
-                "questionTitle": 'What is the official language of #',
-                "answerTitle": 'The Official language of # is '
-            },
-            {
-                "questionTitle": "Which country's official language is #",
-                "answerTitle": '# is the official language of '
-            }
-        ]
+        this.data = this.nodeCache.get("data").geography.officialLanguage.data
+        this.variants = this.nodeCache.get("data").geography.officialLanguage.variants
+       
         this.random = Math.floor(Math.random() * this.variants.length)
+        this.reconstructDataSetForTheVariant()
         this.chooseAnswerSetter()
         this.chooseChoiceFilterer()
         this.setChoices()

@@ -4,14 +4,11 @@ class WinterOlympicYear extends Question{
     
     constructor(){
         super()
-        this.data = this.nodeCache.get("winterOlympicYear")
-        this.variants = [
-            {
-                "questionTitle": "In which country was held #",
-                "answerTitle": "# were held in "
-            }
-        ]
+        this.data = this.nodeCache.get("data").sport.winterOlympicYear.data
+        this.variants = this.nodeCache.get("data").sport.winterOlympicYear.variants
+       
         this.random = Math.floor(Math.random() * this.variants.length)
+        this.reconstructDataSetForTheVariant()
         this.chooseAnswerSetter()
         this.setChoices()
         this.removeUnusedAttributes()

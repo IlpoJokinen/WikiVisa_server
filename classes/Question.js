@@ -50,7 +50,7 @@ class Question {
     reconstructDataSetForTheVariant() {
         this.data = this.data.map(obj => {
             let newObj = {}
-            this.variants[this.random].attributesForDataSet.forEach((key, i) => {
+            this.variants[this.random].dataset.split(",").forEach((key, i) => {
                 newObj[i] = obj[key]
             })
             return newObj

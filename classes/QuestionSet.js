@@ -1,7 +1,7 @@
 const OfficialLanguageQuestion = require("./questionTypes/geoghraphy/OfficialLanguage")
 const NhlPointsQuestion = require("./questionTypes/sport/NhlPoints")
 const WinterOlympicYearQuestion = require("./questionTypes/sport/WinterOlympicYear")
-const LiteratureNobelistQuestion = require("./questionTypes/culture/LiteratureNobelist")
+const LiteratureNobelistQuestion = require("./questionTypes/people/LiteratureNobelist")
 const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
 const WarQuestion = require("./questionTypes/history/War")
@@ -30,8 +30,8 @@ class QuestionSet {
                     createdQuestion = this.createGeographyQuestion(randomizedQuestionType); break;
                 case "sport":
                     createdQuestion = this.createSportQuestion(randomizedQuestionType); break;
-                case "culture":
-                    createdQuestion = this.createCultureQuestion(randomizedQuestionType); break;   
+                case "people":
+                    createdQuestion = this.createPeopleQuestion(randomizedQuestionType); break;   
                 case "history":
                     createdQuestion = this.createHistoryQuestion(randomizedQuestionType); break;   
 
@@ -74,7 +74,7 @@ class QuestionSet {
         }
     }
 
-    createCultureQuestion(questionType) {
+    createPeopleQuestion(questionType) {
         switch(questionType) {
             case "literatureNobelist": 
                 return new LiteratureNobelistQuestion()
