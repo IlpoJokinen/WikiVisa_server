@@ -5,8 +5,13 @@ let conn = connectToDatabase()
 let cacheObject = {}
 
 async function fetchFromDb(){
-    let data = await fetchAllQuestionData()
-    createCacheObjects(data)
+    try {
+        let data = await fetchAllQuestionData()
+        createCacheObjects(data)
+        return new Promise(resolve => resolve())
+    } catch (err) {
+        return new Promise((resolve, reject) => reject(err))
+    }
 }
 
 function createCacheObjects(data){
@@ -46,15 +51,20 @@ function setVariants(data){
 }
 
 async function fetchAllQuestionData() {
-    let all = await conn.query(`SELECT variants.id, questions.question_name, questions.query, variants.dataset, variants.answer_title, variants.question_title, variants.running_number, variant_datasets.dataset, categories.category_name, categories.category_pretty_name 
-    FROM variants 
-    INNER JOIN variant_datasets 
-    ON variants.dataset = variant_datasets.id 
-    INNER JOIN questions 
-    ON variants.question_id = questions.id INNER JOIN categories 
-    ON questions.category_id = categories.id`
-    ).then(([rows,fields]) => rows)
-    return new Promise(resolve => resolve(all))
+    try {
+        let all = await conn.query(`SELECT questions.question_name, questions.query, variants.answer_title, variants.question_title, variants.running_number, variant_datasets.dataset, categories.category_name, categories.category_pretty_name 
+        FROM variants 
+        INNER JOIN variant_datasets 
+        ON variants.dataset = variant_datasets.id 
+        INNER JOIN questions 
+        ON variants.question_id = questions.id INNER JOIN categories 
+        ON questions.category_id = categories.id`
+        ).then(([rows]) => rows)
+        return new Promise(resolve => resolve(all))
+    } catch (err) {
+        return new Promise((resolve, reject) => reject(err))
+    }
+    
 }
 
 module.exports = { fetchFromDb, nodeCache }

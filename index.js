@@ -16,22 +16,18 @@ app.use('/reports', express.static('./reports'))
 startServer()
 
 async function startServer() {
-    await fetchFromDb()
-    await fetchFromWikiData()
+    try {
+        await fetchFromDb()
+        await fetchFromWikiData()
+    }catch(err){
+        console.log(err)
+    }
+    
     const server = app.listen(port, () => console.log(`WikiVisa app listening on port ${port}!`))
         
     app.use(cors())
     const io = socket(server)  
     const Game = require('./classes/Game')(io)
-
-    async function getUri(){
-        const uri = await mongod.getUri()
-        return uri
-    }
-    app.get("/api", async (req, res) => {
-        const userFromDb = await User.find({})
-        res.json({userFromDb})
-    })
 
     function createGame(roomCode, properties) {
         properties.id = game_id
