@@ -21,7 +21,8 @@ module.exports = (io) => class Game {
                 roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
             }, 
             visibility: properties.visibility,
-            losePoints: properties.losePoints
+            losePoints: properties.losePoints,
+            pointsForSpeed: properties.pointsForSpeed
         }
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
@@ -36,6 +37,7 @@ module.exports = (io) => class Game {
         this.correctAnswers = []
         this.ready = false
         this.answerOrder = []
+        this.pointsForSpeed = this.defaults.pointsForSpeed
         this.init()
     }
     init() {
@@ -140,7 +142,7 @@ module.exports = (io) => class Game {
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
                 let extraPoints = Math.abs(this.answerOrder.findIndex(obj => obj.gamertag === p.gamertag) - 5)
-                if(extraPoints <= 5) {
+                if(extraPoints <= 5 && this.pointsForSpeed) {
                     p.points += 10 + extraPoints
                 } else {
                     p.points += 10
