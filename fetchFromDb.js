@@ -58,7 +58,8 @@ async function fetchAllQuestionData() {
         ON variants.dataset = variant_datasets.id 
         INNER JOIN questions 
         ON variants.question_id = questions.id INNER JOIN categories 
-        ON questions.category_id = categories.id`
+        ON questions.category_id = categories.id
+        WHERE categories.category_name = "geography"`
         ).then(([rows]) => rows)
         return new Promise(resolve => resolve(all))
     } catch (err) {

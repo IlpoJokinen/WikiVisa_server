@@ -129,7 +129,7 @@ module.exports = (io) => class Game {
         })
     }
     getQuestions() {
-        let questions = new QuestionSet(["sport", "geography", "history", "people"], this.numberOfQuestions)
+        let questions = new QuestionSet([/*"sport", */"geography"/*, "history", "people"*/], this.numberOfQuestions)
         return questions.get()
     }
     
@@ -229,6 +229,13 @@ module.exports = (io) => class Game {
             this.answerOrder = this.answerOrder.sort((a, b) => a.time - b.time)
             this.answerOrder = this.answerOrder.slice(0, 5)
         }
+    }
+
+    setPlayerReadyLobby(gamertag) {
+        let player = this.getPlayerByGametag(gamertag)
+        player.lobbyReady = true
+        console.log(this.players)
+        io.in(this.roomCode).emit("send players", this.players)
     }
 
     gameWithoutCertainAttributes() {

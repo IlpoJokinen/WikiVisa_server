@@ -54,6 +54,11 @@ async function startServer() {
         game.setAnswerAndPlayerReady(data)
     }
 
+    function setPlayerReadyLobby(data) {
+        let game = getGameByGameId(data.game_id)
+        game.setPlayerReadyLobby(data.gamertag)
+    }
+
     function roomCodeExists(roomCode) {
         return games.some(g => g.roomCode === roomCode)
     }
@@ -146,6 +151,9 @@ async function startServer() {
         })
         socket.on("start game", data => {
             startGame(data.game_id, socket.id)
+        })
+        socket.on("set lobby ready", data => {
+            setPlayerReadyLobby(data)
         })
     })
 }
