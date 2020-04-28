@@ -38,6 +38,7 @@ module.exports = (io) => class Game {
         this.ready = false
         this.answerOrder = []
         this.pointsForSpeed = this.defaults.pointsForSpeed
+        this.messages = []
         this.init()
     }
     init() {
@@ -238,6 +239,13 @@ module.exports = (io) => class Game {
         player.lobbyReady = true
         console.log(this.players)
         io.in(this.roomCode).emit("send players", this.players)
+    }
+
+    handleMessage(data) {
+        delete data.game_id
+        this.messages.push(data)
+        console.log(this.messages)
+        io.in(this.roomCode).emit("send messages", this.messages)
     }
 
     gameWithoutCertainAttributes() {

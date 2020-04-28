@@ -69,12 +69,23 @@ async function startServer() {
 
     function setReady(data) {
         let game = getGameByGameId(data.game_id)
-        game.setAnswerAndPlayerReady(data)
+        if(game){
+            game.setAnswerAndPlayerReady(data)
+        }
     }
 
     function setPlayerReadyLobby(data) {
         let game = getGameByGameId(data.game_id)
-        game.setPlayerReadyLobby(data.gamertag)
+        if(game) {
+            game.setPlayerReadyLobby(data.gamertag)
+        }
+    }
+
+    function handleMessage(data) {
+        let game = getGameByGameId(data.game_id)
+        if(game){
+            game.handleMessage(data)
+        }
     }
 
     function roomCodeExists(roomCode) {
@@ -172,6 +183,9 @@ async function startServer() {
         })
         socket.on("set lobby ready", data => {
             setPlayerReadyLobby(data)
+        })
+        socket.on("send lobby message", (data) => {
+            handleMessage(data)
         })
     })
 }
