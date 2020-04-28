@@ -9,6 +9,7 @@ const games = []
 let game_id = 0
 const { fetchFromDb } = require("./fetchFromDb")
 const { fetchFromWikiData } = require("./fetchWikiData")
+const { nodeCache } = require("./fetchFromDb")
 
 app.use(express.static('./client'))
 
@@ -18,15 +19,8 @@ app.use(function(req, res, next) {
 })
 
 app.get('/api/categories', (req, res) => {
-    res.send([
-        {prettyName: 'Geography', id: 0},
-        {prettyName: 'Literature', id: 1},
-        {prettyName: 'History', id: 2},
-        {prettyName: 'IT', id: 3},
-        {prettyName: 'Humans', id: 4},
-        {prettyName: 'Sports', id: 5},
-        {prettyName: 'Math', id: 6}
-    ])
+    let categories = nodeCache.get("categoryPrettyNames")
+    res.send(categories)
 })
 
 app.use('/reports', express.static('./reports'))

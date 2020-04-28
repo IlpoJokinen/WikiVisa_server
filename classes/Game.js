@@ -244,7 +244,6 @@ module.exports = (io) => class Game {
     handleMessage(data) {
         delete data.game_id
         this.messages.push(data)
-        console.log(this.messages)
         io.in(this.roomCode).emit("send messages", this.messages)
     }
 

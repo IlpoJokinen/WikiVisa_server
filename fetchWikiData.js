@@ -6,6 +6,7 @@ const sleep = ms => {
 }
 
 async function fetchFromWikiData() {
+    console.log("fetching from Wikidata")
     let cacheObject = nodeCache.get("data")
     let keys = Object.keys(cacheObject)
     for (let i = 0; i < keys.length; i++) {
@@ -78,12 +79,14 @@ function checkIfCategoryHasQuestion(categoryName) {
 
 function updateCategoryPrettyNames() {
     let cacheObject = nodeCache.get("data")
-    let prettyNames = nodeCache.take("categoryPrettyNames")
-    let categories = new Set(Object.keys(cacheObject))
-    let categoriesWithQuestions = new Set(
-        [...prettyNames].filter(x => categories.has(x.toLowerCase()))
-    )
-    nodeCache.set("categoryPrettyNames", categoriesWithQuestions)
+    let prettyNamesWithIds = nodeCache.take("categoryPrettyNames")
+    let successfulCategories = new Set(Object.keys(cacheObject))
+    let successfulPrettyNames = prettyNamesWithIds.filter(x => {
+        if(successfulCategories.has(x.prettyName.toLowerCase())){
+            return x
+        } 
+    })
+    nodeCache.set("categoryPrettyNames", successfulPrettyNames)
 }
 
 module.exports = { fetchFromWikiData, nodeCache }

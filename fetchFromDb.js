@@ -6,26 +6,22 @@ let cacheObject = {}
 
 async function fetchFromDb(){
     try {
+        console.log("fetching from Database")
         let data = await fetchAllQuestionData()
-        createCacheObjects(data)
+        await fetchPrettyNamesToCache()
+        createCacheObject(data)
         return new Promise(resolve => resolve())
     } catch (err) {
         return new Promise((resolve, reject) => reject(err))
     }
 }
 
-function createCacheObjects(data){
-    setCategoryPrettyNames(data)
+function createCacheObject(data){
     setCategories(data)
     setQuestions(data)
     setVariants(data)
     nodeCache.set("data", cacheObject)
 }   
-
-function setCategoryPrettyNames(data) {
-    let categoryPrettyNames = new Set(data.map(row => row.category_pretty_name))
-    nodeCache.set("categoryPrettyNames", categoryPrettyNames)
-}
 
 function setCategories(data) {
     let categories = new Set(data.map(row => row.category_name))
@@ -52,7 +48,7 @@ function setVariants(data){
 
 async function fetchAllQuestionData() {
     try {
-        let all = await conn.query(`SELECT questions.question_name, questions.query, variants.answer_title, variants.question_title, variants.running_number, variant_datasets.dataset, categories.category_name, categories.category_pretty_name 
+        let all = await conn.query(`SELECT questions.question_name, categories.id AS category_id, questions.query, variants.answer_title, variants.question_title, variants.running_number, variant_datasets.dataset, categories.category_name, categories.category_pretty_name 
         FROM variants 
         INNER JOIN variant_datasets 
         ON variants.dataset = variant_datasets.id 
@@ -66,6 +62,16 @@ async function fetchAllQuestionData() {
         return new Promise((resolve, reject) => reject(err))
     }
     
+}
+
+async function fetchPrettyNamesToCache() {
+    try {
+        let prettyNames = await conn.query(`SELECT categories.category_pretty_name AS prettyName, categories.id FROM categories`
+        ).then(([rows]) => nodeCache.set("categoryPrettyNames", rows))
+        return new Promise(resolve => resolve())
+    } catch (err) {
+        return new Promise((resolve, reject) => reject(err))
+    }
 }
 
 module.exports = { fetchFromDb, nodeCache }
