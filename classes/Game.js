@@ -54,11 +54,11 @@ module.exports = (io) => class Game {
 
     startGame() {
         this.started = true
+        io.in(this.roomCode).emit("game started")
         this.startTimer()
     } 
 
     startTimer() {
-        io.in(this.roomCode).emit("game started")
         let counter = setInterval(() => {
             let currentTime = this.updateGameTime()
             if(currentTime <= 0) {
@@ -112,7 +112,6 @@ module.exports = (io) => class Game {
         if(this.view === 2){
             this.sendNextQuestion()
         }
-
         io.in(this.roomCode).emit('update game view', this.view)
     }
     
@@ -237,7 +236,6 @@ module.exports = (io) => class Game {
     setPlayerReadyLobby(gamertag) {
         let player = this.getPlayerByGametag(gamertag)
         player.lobbyReady = true
-        console.log(this.players)
         io.in(this.roomCode).emit("send players", this.players)
     }
 
