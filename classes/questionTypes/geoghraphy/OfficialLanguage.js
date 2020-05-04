@@ -19,6 +19,7 @@ class OfficialLanguage extends Question {
         this.randomizedItems = this.getRandomItems(4)
         this.choices = this.choiceFilterer()
         this.setCorrectAnswer()
+        this.controlThatOnlyOneCorrectAnswer(this.random === 0 ? 1 : 0)
     }
 
     chooseAnswerSetter() {
