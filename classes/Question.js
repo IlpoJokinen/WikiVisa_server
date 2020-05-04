@@ -47,6 +47,45 @@ class Question {
         } else return false
     }
 
+    controlThatOnlyOneCorrectAnswer(choiceIndex) {
+        //etsi datasta oikean vastauksen kaikki ilmentymät ja laita ne kielet listaan
+        let answerCountrysLanguages = this.data.filter(x => x[0] === this.randomizedItems[this.answer.index][0]).map(x => x[1])
+        //väärät vastaukset listassa
+        let withoutCorrectAnswer = this.randomizedItems.filter((x, i) => i !== this.answer.index)
+        //etsi datasta jokaisen väärän vastauksen virallisetkielet ja laita ne listaan ja tarkista löytyykö samoja kuin oikean vastauksen kielilistalta 
+        //jos löytyy niin korvaa
+        let newChoices = withoutCorrectAnswer.map(item => {
+            let itemsOfficialLanguages = this.data.filter(x => x[0] === item[0]).map(x => x[1]).concat(item[1])
+            if(this.haveCommonElements(answerCountrysLanguages, itemsOfficialLanguages)){
+
+                return this.replaceObject(answerCountrysLanguages)
+                
+            }
+            else return item
+        })
+        //päivitä choicet
+        this.choices = newChoices.map(choice => choice[choiceIndex])
+        this.choices.splice(this.answer.index, 0, this.answer.name)
+    }
+
+    haveCommonElements(arr1, arr2) { 
+        return arr1.some(item => arr2.includes(item)) 
+    } 
+
+    replaceObject(answerCountrysLanguagesArray) {
+        while(true) {
+            let randomIndex = Math.floor(Math.random() * this.data.length),
+                randomItem = this.data[randomIndex];
+            let allInstances = this.data.filter(x => x[0] === randomItem[0]).map(x => x[1])
+            if(this.haveCommonElements(answerCountrysLanguagesArray, allInstances)){
+                continue
+            } else {
+                return randomItem
+            }
+        }
+    }
+
+
     reconstructDataSetForTheVariant() {
         this.data = this.data.map(obj => {
             let newObj = {}
