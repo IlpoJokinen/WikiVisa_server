@@ -1,35 +1,35 @@
 const QuestionSet = require('./QuestionSet')
 let categories = {
-    Geoghraphy: ["area", "population", "officialLanguage", "capital"]
+    geoghraphy: ["area", "population", "officialLanguage", "capital"]
 }
-
 module.exports = (io) => class Game {
-
     constructor(properties) {
         this.id = properties.id
+        this.type = properties.type
         this.gameCreator = properties.gameCreator
         this.started = false
         this.roomCode = properties.roomCode
         this.startGameCounter = 5
         this.defaults = {
             question: {
-                categories: properties.question.categories.length ? properties.question.categories : categories.Geoghraphy,
-                count: properties.question.count.length ? properties.question.count : 5,
+                categories: properties.hasOwnProperty('categories') ? properties.question.categories : categories.geoghraphy,
+                count: properties.hasOwnProperty('count') ? properties.question.count : 5,
             }, 
             counters: {
-                questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
-                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
+                questionCounter: properties.hasOwnProperty('answer') ? properties.counters.answer : 10,
+                roundEndCounter: properties.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
             }, 
-            visibility: properties.visibility,
-            losePoints: properties.losePoints,
-            pointsForSpeed: properties.pointsForSpeed
+            visibility: properties.hasOwnProperty('visibility') ? properties.visibility : false,
+            losePoints: properties.hasOwnProperty('losePoints') ? properties.losePoints : false,
+            pointsForSpeed: properties.hasOwnProperty('pointsForSpeed') ? properties.pointsForSpeed : false
         }
+        this.categories =  this.defaults.question.categories
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
         this.numberOfQuestions= this.defaults.question.count
-        this.visibility = this.defaults.visibility
+        this.visibility = properties.type === 'quick' ? false : this.defaults.visibility
         this.losePoints = this.defaults.losePoints
-        this.categories =  this.defaults.question.categories
+        this.pointsForSpeed = this.defaults.pointsForSpeed
         this.questions = []
         this.currentQuestionIndex = 0
         this.view = 1
@@ -37,7 +37,6 @@ module.exports = (io) => class Game {
         this.correctAnswers = []
         this.ready = false
         this.answerOrder = []
-        this.pointsForSpeed = this.defaults.pointsForSpeed
         this.messages = []
         this.init()
     }
@@ -270,10 +269,13 @@ module.exports = (io) => class Game {
             let counter = setInterval(() => {
                 if(this.ready) {
                     clearInterval(counter)
+                    if(this.type === 'quick'){
+                        this.startGame()
+                    }
                     res(this)
                 }
             }, 100)
         })
     }
     
-}
+}   
