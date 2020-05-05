@@ -5,6 +5,8 @@ const LiteratureNobelistQuestion = require("./questionTypes/people/LiteratureNob
 const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
 const WarQuestion = require("./questionTypes/history/War")
+const VideoGameQuestion = require('./questionTypes/games/VideoGames')
+
 const { nodeCache } = require("../fetchFromDb")
 
 let cacheObject = nodeCache.get("data")
@@ -34,7 +36,8 @@ class QuestionSet {
                     createdQuestion = this.createPeopleQuestion(randomizedQuestionType); break;   
                 case "history":
                     createdQuestion = this.createHistoryQuestion(randomizedQuestionType); break;   
-
+                case "games":
+                    createdQuestion = this.createGameQuestion(randomizedQuestionType); break;
             }
             createdQuestion.id = i;
             this.questions.push(createdQuestion)
@@ -85,6 +88,13 @@ class QuestionSet {
         switch(questionType) {
             case "war": 
                 return new WarQuestion()
+        }
+    }
+
+    createGameQuestion(questionType) {
+        switch(questionType) {
+            case "videoGames":
+                return new VideoGameQuestion()
         }
     }
 
