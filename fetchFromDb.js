@@ -54,8 +54,7 @@ async function fetchAllQuestionData() {
         ON variants.dataset = variant_datasets.id 
         INNER JOIN questions 
         ON variants.question_id = questions.id INNER JOIN categories 
-        ON questions.category_id = categories.id
-        WHERE categories.category_name = "games"`
+        ON questions.category_id = categories.id`
         ).then(([rows]) => rows)
         return new Promise(resolve => resolve(all))
     } catch (err) {
@@ -66,7 +65,7 @@ async function fetchAllQuestionData() {
 
 async function fetchPrettyNamesToCache() {
     try {
-        let prettyNames = await conn.query(`SELECT categories.category_pretty_name AS prettyName, categories.id FROM categories`
+        let prettyNames = await conn.query(`SELECT categories.category_pretty_name AS prettyName, categories.category_name AS name, categories.id FROM categories`
         ).then(([rows]) => nodeCache.set("categoryPrettyNames", rows))
         return new Promise(resolve => resolve())
     } catch (err) {

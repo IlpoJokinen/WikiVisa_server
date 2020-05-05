@@ -1,7 +1,6 @@
 const QuestionSet = require('./QuestionSet')
-let categories = {
-    geoghraphy: ["area", "population", "officialLanguage", "capital"]
-}
+const { nodeCache } = require("../fetchFromDb")
+
 module.exports = (io) => class Game {
     constructor(properties) {
         this.id = properties.id
@@ -12,12 +11,12 @@ module.exports = (io) => class Game {
         this.startGameCounter = 5
         this.defaults = {
             question: {
-                categories: properties.hasOwnProperty('categories') ? properties.question.categories : categories.geoghraphy,
-                count: properties.hasOwnProperty('count') ? properties.question.count : 5,
+                categories: properties.question.hasOwnProperty('categories') && properties.question.categories.length ? properties.question.categories : this.allCategories(),
+                count: properties.question.hasOwnProperty('count') ? properties.question.count : 5,
             }, 
             counters: {
-                questionCounter: properties.hasOwnProperty('answer') ? properties.counters.answer : 10,
-                roundEndCounter: properties.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
+                questionCounter: properties.counters.hasOwnProperty('answer') ? properties.counters.answer : 10,
+                roundEndCounter: properties.counters.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
             }, 
             visibility: properties.hasOwnProperty('visibility') ? properties.visibility : false,
             losePoints: properties.hasOwnProperty('losePoints') ? properties.losePoints : false,
@@ -130,7 +129,7 @@ module.exports = (io) => class Game {
         })
     }
     getQuestions() {
-        let questions = new QuestionSet([/*"sport", */"games"/*, "history", "people"*/], this.numberOfQuestions)
+        let questions = new QuestionSet(this.categories, this.numberOfQuestions)
         return questions.get()
     }
     
@@ -262,6 +261,11 @@ module.exports = (io) => class Game {
             maxPlayers: 5,
             currentPlayers: 1,
         }
+    }
+
+    allCategories() {
+        let existingCategories = nodeCache.get("categoryPrettyNames")
+        return existingCategories.map(x => x.id)
     }
 
     get() {

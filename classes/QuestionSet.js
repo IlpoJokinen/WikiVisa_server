@@ -13,9 +13,9 @@ let cacheObject = nodeCache.get("data")
 
 class QuestionSet {
 
-    constructor(categories, numberOfQuestions) {
+    constructor(categoryIds, numberOfQuestions) {
         this.questions = []
-        this.categories = categories
+        this.categories = this.idsToNames(categoryIds)
         this.numberOfQuestions = numberOfQuestions
         this.createQuestionArray()
     }
@@ -43,6 +43,19 @@ class QuestionSet {
             this.questions.push(createdQuestion)
         }
         this.ready = true
+    }
+
+    idsToNames(categoryIds) {
+        let allCategoryNames = nodeCache.get("categoryPrettyNames")
+        let selectedCategoryNames = []
+        categoryIds.forEach(id => {
+            for(let i = 0; i < allCategoryNames.length; i++){
+                if(id === allCategoryNames[i].id){
+                    selectedCategoryNames.push(allCategoryNames[i].name)
+                }
+            }
+        })
+        return selectedCategoryNames
     }
 
     randomizeCategory() {
