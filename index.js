@@ -10,33 +10,27 @@ let game_id = 0
 const { fetchFromDb } = require("./fetchFromDb")
 const { fetchFromWikiData } = require("./fetchWikiData")
 const { nodeCache } = require("./fetchFromDb")
-
 app.use(express.static('./client'))
-
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", '*')
     next()
 })
-
 app.get('/api/categories', (req, res) => {
-    let categories = nodeCache.get("categoryPrettyNames")
+    let categories = nodeCache.get("categories")
     res.send(categories)
 })
-
 app.use('/reports', express.static('./reports'))
- 
 startServer()
-
 async function startServer() {
     try {
         await fetchFromDb()
+        console.log('Done')
         await fetchFromWikiData()
-    }catch(err){
+        console.log('Done')
+    } catch(err){
         console.log(err)
     }
-    
     const server = app.listen(port, () => console.log(`WikiVisa app listening on port ${port}!`))
-        
     app.use(cors())
     const io = socket(server)  
     const Game = require('./classes/Game')(io)
@@ -44,17 +38,14 @@ async function startServer() {
     function createGame(roomCode, properties) {
         properties.id = game_id
         properties.roomCode = roomCode.length ? roomCode : utils.generateRandomString(4)
+        properties.question.categories = properties.question.hasOwnProperty('categories') && properties.question.categories.length 
+        ? properties.question.categories.map(id => nodeCache.get("categories").find(category => id === category.id)) 
+        : nodeCache.get("categories")
         let game = new Game(properties)
         return new Promise((resolve, reject) => {
             game_id++
             resolve(game.get())
         })
-    }
-
-    //tästä en tiiä
-    function removeGame(game){
-        let gameIndex = getGamesIndexInGames(game.game_id)
-        games.splice(gameIndex, 1)
     }
 
     function getGameByGameId(id) {
@@ -98,20 +89,30 @@ async function startServer() {
         return false
     }
 
-    function getPublicGames() {
-        const publicGames = []
-        games.forEach(game => {
-            if(game.visibility && !game.started) {
-                publicGames.push(game.getAsFindGameItem())
-            }
+    Array.prototype.includesAll = function (arr) {
+        let allFound = true
+        arr.forEach(x => {
+            allFound = this.includes(x)
         })
-        return publicGames
+        return allFound
+    }
+
+    function getGamesByFilters(filters) {
+        let filteredGames = games.filter(game => !game.started && game.visibility )
+        filteredGames = filteredGames.filter(game => {
+            return game.numberOfQuestions <= filters.maximumQuestionCount
+        })
+        filteredGames = filteredGames.filter(game => {
+            return game.categories.map(category => category.id).includesAll(filters.selectedCategories)
+        })
+        
+        return filteredGames.map(game => game.getAsFindGameItem())
     }
 
     io.on("connection", (socket) => { 
 
-        socket.on('get public games', () => {
-            socket.emit('send public games', getPublicGames())
+        socket.on('get games', filters => {
+            socket.emit('send games', getGamesByFilters(filters))
         })
 
         socket.on('create game', data => {

@@ -6,7 +6,7 @@ let cacheObject = {}
 
 async function fetchFromDb(){
     try {
-        console.log("fetching from Database")
+        console.log("Fetching from Database...")
         let data = await fetchAllQuestionData()
         await fetchPrettyNamesToCache()
         createCacheObject(data)
@@ -66,7 +66,7 @@ async function fetchAllQuestionData() {
 async function fetchPrettyNamesToCache() {
     try {
         let prettyNames = await conn.query(`SELECT categories.category_pretty_name AS prettyName, categories.category_name AS name, categories.id FROM categories`
-        ).then(([rows]) => nodeCache.set("categoryPrettyNames", rows))
+        ).then(([rows]) => nodeCache.set("categories", rows))
         return new Promise(resolve => resolve())
     } catch (err) {
         return new Promise((resolve, reject) => reject(err))

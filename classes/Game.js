@@ -1,5 +1,4 @@
 const QuestionSet = require('./QuestionSet')
-const { nodeCache } = require("../fetchFromDb")
 
 module.exports = (io) => class Game {
     constructor(properties) {
@@ -11,7 +10,7 @@ module.exports = (io) => class Game {
         this.startGameCounter = 5
         this.defaults = {
             question: {
-                categories: properties.question.hasOwnProperty('categories') && properties.question.categories.length ? properties.question.categories : this.allCategories(),
+                categories: properties.question.categories,
                 count: properties.question.hasOwnProperty('count') ? properties.question.count : 5,
             }, 
             counters: {
@@ -25,7 +24,7 @@ module.exports = (io) => class Game {
         this.categories =  this.defaults.question.categories
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
-        this.numberOfQuestions= this.defaults.question.count
+        this.numberOfQuestions = this.defaults.question.count
         this.visibility = properties.type === 'quick' ? false : this.defaults.visibility
         this.losePoints = this.defaults.losePoints
         this.pointsForSpeed = this.defaults.pointsForSpeed
@@ -128,6 +127,7 @@ module.exports = (io) => class Game {
             }
         })
     }
+
     getQuestions() {
         let questions = new QuestionSet(this.categories, this.numberOfQuestions)
         return questions.get()
@@ -257,15 +257,10 @@ module.exports = (io) => class Game {
     getAsFindGameItem() {
         return {
             roomCode: this.roomCode,
-            categories: this.categories,
+            categories: this.categories.map(category => category.prettyName),
             maxPlayers: 5,
             currentPlayers: 1,
         }
-    }
-
-    allCategories() {
-        let existingCategories = nodeCache.get("categoryPrettyNames")
-        return existingCategories.map(x => x.id)
     }
 
     get() {

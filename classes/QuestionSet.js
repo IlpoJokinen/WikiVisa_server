@@ -13,9 +13,9 @@ let cacheObject = nodeCache.get("data")
 
 class QuestionSet {
 
-    constructor(categoryIds, numberOfQuestions) {
+    constructor(categories, numberOfQuestions) {
         this.questions = []
-        this.categories = this.idsToNames(categoryIds)
+        this.categories = categories.map(category => category.name)
         this.numberOfQuestions = numberOfQuestions
         this.createQuestionArray()
     }
@@ -26,7 +26,6 @@ class QuestionSet {
             let randomizedCategory = this.randomizeCategory()
             let questionTypes = Object.keys(cacheObject[randomizedCategory])
             let randomizedQuestionType = this.randomizeQuestionType(questionTypes)
-
             switch(randomizedCategory){
                 case "geography": 
                     createdQuestion = this.createGeographyQuestion(randomizedQuestionType); break;
@@ -43,19 +42,6 @@ class QuestionSet {
             this.questions.push(createdQuestion)
         }
         this.ready = true
-    }
-
-    idsToNames(categoryIds) {
-        let allCategoryNames = nodeCache.get("categoryPrettyNames")
-        let selectedCategoryNames = []
-        categoryIds.forEach(id => {
-            for(let i = 0; i < allCategoryNames.length; i++){
-                if(id === allCategoryNames[i].id){
-                    selectedCategoryNames.push(allCategoryNames[i].name)
-                }
-            }
-        })
-        return selectedCategoryNames
     }
 
     randomizeCategory() {
