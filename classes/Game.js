@@ -7,7 +7,7 @@ module.exports = (io) => class Game {
         this.gameCreator = properties.gameCreator
         this.started = false
         this.roomCode = properties.roomCode
-        this.startGameCounter = 5
+        this.startGameCounter = 1
         this.defaults = {
             question: {
                 categories: properties.question.categories,
@@ -107,9 +107,16 @@ module.exports = (io) => class Game {
 
     updateGameViewIndexForClients() {
         if(this.view === 2){
+            this.zeroPointsAddedPropertyOfPlayers()
             this.sendNextQuestion()
         }
         io.in(this.roomCode).emit('update game view', this.view)
+    }
+
+    zeroPointsAddedPropertyOfPlayers() {
+        this.players = this.players.map(p => {
+            return {...p, pointsAdded: 0}
+        })
     }
     
     sendNextQuestion(){
@@ -141,12 +148,15 @@ module.exports = (io) => class Game {
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
                 let extraPoints = Math.abs(this.answerOrder.findIndex(obj => obj.gamertag === p.gamertag) - 5)
                 if(extraPoints <= 5 && this.pointsForSpeed) {
-                    p.points += 10 + extraPoints
+                    p.pointsAdded = 10 + extraPoints
+                    p.points += p.pointsAdded
                 } else {
-                    p.points += 10
+                    p.pointsAdded = 10
+                    p.points += p.pointsAdded
                 }
             } else {
                 if(this.losePoints && p.points >= 5) {
+                    p.pointsAdded = -5
                     p.points -= 5
                 }
             }

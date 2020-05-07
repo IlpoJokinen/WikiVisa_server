@@ -6,6 +6,7 @@ const CountryQuestion = require("./questionTypes/geoghraphy/Country")
 const UsStatesQuestion = require("./questionTypes/geoghraphy/UsStates")
 const WarQuestion = require("./questionTypes/history/War")
 const VideoGameQuestion = require('./questionTypes/games/VideoGames')
+const SkyscraperQuestion = require('./questionTypes/landmarks/Skyscraper')
 
 const { nodeCache } = require("../fetchFromDb")
 
@@ -37,6 +38,8 @@ class QuestionSet {
                     createdQuestion = this.createHistoryQuestion(randomizedQuestionType); break;   
                 case "games":
                     createdQuestion = this.createGameQuestion(randomizedQuestionType); break;
+                case "landmarks":
+                    createdQuestion = this.createLandmarkQuestion(randomizedQuestionType); break;
             }
             createdQuestion.id = i;
             this.questions.push(createdQuestion)
@@ -94,6 +97,13 @@ class QuestionSet {
         switch(questionType) {
             case "videoGames":
                 return new VideoGameQuestion()
+        }
+    }
+
+    createLandmarkQuestion(questionType) {
+        switch(questionType) {
+            case "skyscraper":
+                return new SkyscraperQuestion()
         }
     }
 
