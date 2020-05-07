@@ -7,6 +7,7 @@ module.exports = (io) => class Game {
         this.gameCreator = properties.gameCreator
         this.started = false
         this.roomCode = properties.roomCode
+        this.currentPlayers = 0
         this.startGameCounter = 1
         this.defaults = {
             question: {
@@ -17,10 +18,12 @@ module.exports = (io) => class Game {
                 questionCounter: properties.hasOwnProperty('counters') && properties.counters.hasOwnProperty('answer') ? properties.counters.answer : 10,
                 roundEndCounter: properties.hasOwnProperty('counters') && properties.counters.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
             }, 
+            maxPlayers: properties.hasOwnProperty('maxPlayers') ? properties.maxPlayers : properties.type === 'quick' ? 1 : 6,
             visibility: properties.hasOwnProperty('visibility') ? properties.visibility : false,
             losePoints: properties.hasOwnProperty('losePoints') ? properties.losePoints : false,
             pointsForSpeed: properties.hasOwnProperty('pointsForSpeed') ? properties.pointsForSpeed : false
         }
+        this.maxPlayers = this.defaults.maxPlayers
         this.categories =  this.defaults.question.categories
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
@@ -38,6 +41,7 @@ module.exports = (io) => class Game {
         this.messages = []
         this.init()
     }
+
     init() {
         this.getQuestions().then(questions => {
             questions.forEach(question => {
@@ -207,6 +211,7 @@ module.exports = (io) => class Game {
     }
 
     addPlayer(player) {
+        this.currentPlayers++
         this.players.push(player)
     }
 
@@ -270,8 +275,8 @@ module.exports = (io) => class Game {
         return {
             roomCode: this.roomCode,
             categories: this.categories.map(category => category.prettyName),
-            maxPlayers: 5,
-            currentPlayers: 1,
+            maxPlayers: this.maxPlayers,
+            currentPlayers: this.currentPlayers
         }
     }
 

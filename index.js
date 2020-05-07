@@ -102,14 +102,13 @@ async function startServer() {
     }
 
     function getGamesByFilters(filters) {
-        let filteredGames = games.filter(game => !game.started && game.visibility )
+        let filteredGames = games.filter(game => !game.started && game.visibility && game.currentPlayers < game.maxPlayers )
         filteredGames = filteredGames.filter(game => {
             return game.numberOfQuestions <= filters.maximumQuestionCount
         })
         filteredGames = filteredGames.filter(game => {
             return game.categories.map(category => category.id).includesAll(filters.selectedCategories)
         })
-        
         return filteredGames.map(game => game.getAsFindGameItem())
     }
 
@@ -150,6 +149,10 @@ async function startServer() {
             let game = getGameByRoomCode(data.roomCode)
             if(game.started){
                 socket.emit("error while joining", "Bollocks! Game has already started. Provide another room code!")
+                return false
+            }
+            if(game.maxPlayers <= game.currentPlayers) {
+                socket.emit("error while joining", "Room is full, sorry!")
                 return false
             }
             //verrataan gamertagia huoneen muiden pelaajien tageihin 
