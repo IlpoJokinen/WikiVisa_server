@@ -114,7 +114,7 @@ module.exports = (io) => class Game {
     
     sendNextQuestion(){
         let nextQuestion = this.questions[this.currentQuestionIndex]
-        io.in(this.roomCode).emit("send question", nextQuestion)
+        io.in(this.roomCode).emit("send question", {nextQuestion: nextQuestion, questionIndex: this.currentQuestionIndex + 1})
     }
 
     setCorrectAnswer(question) {
