@@ -139,6 +139,7 @@ module.exports = (io) => class Game {
             p.ready = false
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
+                p.pointsAdded += 10
                 let extraPoints = Math.abs(this.answerOrder.findIndex(obj => obj.gamertag === p.gamertag) - 5)
                 if(extraPoints <= 5 && this.pointsForSpeed) {
                     p.points += 10 + extraPoints
@@ -146,6 +147,7 @@ module.exports = (io) => class Game {
                     p.points += 10
                 }
             } else {
+                p.pointsAdded = 0
                 if(this.losePoints && p.points >= 5) {
                     p.points -= 5
                 }

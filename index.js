@@ -134,6 +134,7 @@ async function startServer() {
                     gamertag: data.gamertag,
                     answers: [],
                     points: 0,
+                    pointsAdded: 0,
                     ready: false,
                     roomCode: game.roomCode
                 })
@@ -168,6 +169,7 @@ async function startServer() {
                 gamertag: data.gamertag,
                 answers: [],
                 points: 0,
+                pointsAdded: 0,
                 ready: false,
                 roomCode: game.roomCode
             })
