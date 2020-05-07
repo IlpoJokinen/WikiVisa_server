@@ -11,11 +11,11 @@ module.exports = (io) => class Game {
         this.defaults = {
             question: {
                 categories: properties.question.categories,
-                count: properties.question.hasOwnProperty('count') ? properties.question.count : 5,
+                count: properties.hasOwnProperty('question') && properties.question.hasOwnProperty('count') ? properties.question.count : 5,
             }, 
             counters: {
-                questionCounter: properties.counters.hasOwnProperty('answer') ? properties.counters.answer : 10,
-                roundEndCounter: properties.counters.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
+                questionCounter: properties.hasOwnProperty('counters') && properties.counters.hasOwnProperty('answer') ? properties.counters.answer : 10,
+                roundEndCounter: properties.hasOwnProperty('counters') && properties.counters.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
             }, 
             visibility: properties.hasOwnProperty('visibility') ? properties.visibility : false,
             losePoints: properties.hasOwnProperty('losePoints') ? properties.losePoints : false,

@@ -16,6 +16,9 @@ async function fetchFromWikiData() {
         await sleep(1500)
     }
     updateCategoryPrettyNames()
+    console.log(nodeCache.get("data"))
+    console.log(nodeCache.get("categories"))
+
 }
 
 async function fetchQuestionDataByCategory(categoryObject, categoryName) {

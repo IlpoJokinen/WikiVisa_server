@@ -38,9 +38,13 @@ async function startServer() {
     function createGame(roomCode, properties) {
         properties.id = game_id
         properties.roomCode = roomCode.length ? roomCode : utils.generateRandomString(4)
-        properties.question.categories = properties.question.hasOwnProperty('categories') && properties.question.categories.length 
-        ? properties.question.categories.map(id => nodeCache.get("categories").find(category => id === category.id)) 
-        : nodeCache.get("categories")
+        if(properties.type === "quick") {
+            properties.question = {categories: nodeCache.get("categories")}
+        } else {
+            properties.question.categories = properties.question.hasOwnProperty('categories') && properties.question.categories.length 
+            ? properties.question.categories.map(id => nodeCache.get("categories").find(category => id === category.id)) 
+            : nodeCache.get("categories")
+        }
         let game = new Game(properties)
         return new Promise((resolve, reject) => {
             game_id++
