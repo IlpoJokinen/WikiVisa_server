@@ -121,7 +121,7 @@ module.exports = (io) => class Game {
     
     sendNextQuestion(){
         let nextQuestion = this.questions[this.currentQuestionIndex]
-        io.in(this.roomCode).emit("send question", nextQuestion)
+        io.in(this.roomCode).emit("send question", {nextQuestion: nextQuestion, questionIndex: this.currentQuestionIndex + 1})
     }
 
     setCorrectAnswer(question) {
@@ -146,6 +146,7 @@ module.exports = (io) => class Game {
             p.ready = false
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
+                p.pointsAdded += 10
                 let extraPoints = Math.abs(this.answerOrder.findIndex(obj => obj.gamertag === p.gamertag) - 5)
                 if(extraPoints <= 5 && this.pointsForSpeed) {
                     p.pointsAdded = 10 + extraPoints
@@ -155,6 +156,7 @@ module.exports = (io) => class Game {
                     p.points += p.pointsAdded
                 }
             } else {
+                p.pointsAdded = 0
                 if(this.losePoints && p.points >= 5) {
                     p.pointsAdded = -5
                     p.points -= 5
