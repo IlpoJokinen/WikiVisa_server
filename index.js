@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const path = require('path')
 const cors = require('cors')
 const app = express()
 const socket = require('socket.io')
@@ -10,8 +11,14 @@ let game_id = 0
 const { fetchFromDb } = require("./fetchFromDb")
 const { fetchFromWikiData } = require("./fetchWikiData")
 const { nodeCache } = require("./fetchFromDb")
-app.use(express.static('client'))
-app.use('/reports', express.static('reports'))
+app.use(express.static(path.join(__dirname, '/client')))
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/client/index.html')
+})
+app.use('/reports', express.static(path.join(__dirname, '/reports')))
+app.get('/reports', (req, res) => {
+    res.sendFile(__dirname + '/reports/index.html')
+})
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", '*')
     next()
@@ -193,4 +200,3 @@ async function startServer() {
         })
     })
 }
-
