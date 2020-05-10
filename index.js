@@ -11,7 +11,6 @@ const { fetchFromDb } = require("./fetchFromDb")
 const { fetchFromWikiData } = require("./fetchWikiData")
 const { nodeCache } = require("./fetchFromDb")
 app.use(express.static('client'))
-app.get('/', (req, res) => res.send('Starting app...'))
 app.use('/reports', express.static('reports'))
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", '*')
