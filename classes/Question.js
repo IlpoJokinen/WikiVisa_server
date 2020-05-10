@@ -1,75 +1,34 @@
-const fetch = require("node-fetch");
-const NodeCache = require( "node-cache" );
-const nodeCache = new NodeCache();
-
-const { 
-    getUsStates,
-    getCountriesWithOfficialLanguages,
-    getCountriesWithCapitals,
-    getCountriesWithPopulation,
-    getCountriesArea
-} = require('../wikiQuery.js')
+const { nodeCache } = require("../fetchFromDb")
 
 class Question {
 
-    constructor(id, category) {
-        this.id = id
-        this.init(category)
-    }
-
-    init(category) {
-        this.setOptions(category)
-        if(nodeCache.has(category)){
-            let dataInCache = nodeCache.get(category)
-            this.filteredData = dataInCache
-            this.setChoices()
-            this.options.ready = true
-        } else {
-            this.fetchData(this.options.query).then(data => {
-                this.filterData(data)
-                nodeCache.set(category, this.filteredData)
-                this.setChoices()
-                this.options.ready = true
-            })
-        }
-    }
-
-    fetchData(sql) {
-        return fetch(`https://query.wikidata.org/sparql?query=${sql}&format=json`)
-        .then(response => response.json())
-        .then(data => {
-            return data.results.bindings
-        })
-        .catch(error => console.log(error))
-    }   
-
-    filterData(data) {
-        this.filteredData = []
-        data.forEach(row => {
-            let obj = {}, keys = Object.keys(row)
-            if(keys.length === 2) {
-                keys.forEach((key, i) => {
-                    obj[i] = row[key].value
-                }) 
-                this.filteredData.push(obj)
-            }
-        })
+    constructor() {
+        this.nodeCache = nodeCache
     }
     
-    setChoices() {
-        this.randomizedItems = this.getRandomItems(this.options.choiceCount)
-        this.choices = this.filterChoices(this.randomizedItems)
-        this.options.setCorrectAnswer()
+    setAnswerTitle(string) {
+        this.answerTitle = this.variants[this.random].answerTitle.replace("#", string)
+    }
+
+    setQuestionTitle(string) {
+        this.title = this.variants[this.random].questionTitle.replace('#', string)
+    }
+
+    filterChoices(indexOfChoice) {
+        let choices = []
+        this.randomizedItems.forEach(item => {
+            choices.push(item[indexOfChoice])  
+        })
+        return choices
     }
 
     getRandomItems(numberOfItems) {
         let randomItems = []
         for(let i = 0; i < numberOfItems; i++) {
-            let randomIndex = Math.floor(Math.random() * this.filteredData.length),
-                randomItem = this.filteredData[randomIndex];
-            this.filteredData.splice(randomIndex, 1)
-            let choices = randomItems.map(i => i[1])
-            if(choices.includes(randomItem[1])){
+            let randomIndex = Math.floor(Math.random() * this.data.length),
+                randomItem = this.data[randomIndex];
+            this.data.splice(randomIndex, 1)
+            if(this.isADuplicate(randomItems, randomItem)){
                 i--
                 continue;
             }
@@ -77,27 +36,84 @@ class Question {
         }
         return randomItems
     }
-
-    filterChoices(items) {
-        //Tässä käytetään oliomuuttuja randomia, jonka perusteella on päätetty myös kysymysvariaatio, määrittämään nyt se mitä
-        //valitaan vastausvaihtoehdoiksi. Eli haluammeko valita esim. neljä maata vai neljä pääkaupunkia.
-        //Kysymyksissä "area" ja "population" haluamme valita molemmissa varianteissa maita, emme koskaan niitä lukuja.
-        let indexForChoices = this.random === 1 || ["area", "population"].includes(this.options.category) ? 0 : 1
-        let choices = []
-        items.forEach(item => {
-            choices.push(item[indexForChoices])  
-        })
-        return choices
+    //tarkistaa ettei randomisoinnissa tule duplikaatteja 
+    isADuplicate(randomItems, randomItem) {
+        let zeros = randomItems.map(r => r[0])
+        let ones = randomItems.map(r => r[1])
+        if(zeros.includes(randomItem[0])){
+            return true
+        }else if(ones.includes(randomItem[1])){
+            return true
+        } else return false
     }
 
-    setCorrectAnswerRandom() {
-        //myös tässä täytyy päättää random oliomuuttujan avulla kumpi olion attribuutti, esim. maa vai pääkaupunki asetetaan kysymykseen
-        //ja kumpi vastaukseen
-        let indexForAnswer = this.random === 0 ? 1 : 0,
-            indexForTitles = this.random === 0 ? 0 : 1
+    controlThatOnlyOneCorrectAnswer(choiceIndex) {
+        //etsi datasta oikean vastauksen kaikki ilmentymät ja laita ne kielet listaan
+        let answerCountrysLanguages = this.data.filter(x => x[0] === this.randomizedItems[this.answer.index][0]).map(x => x[1])
+        //väärät vastaukset listassa
+        let withoutCorrectAnswer = this.randomizedItems.filter((x, i) => i !== this.answer.index)
+        //etsi datasta jokaisen väärän vastauksen virallisetkielet ja laita ne listaan ja tarkista löytyykö samoja kuin oikean vastauksen kielilistalta 
+        //jos löytyy niin korvaa
+        let newChoices = withoutCorrectAnswer.map(item => {
+            let itemsOfficialLanguages = this.data.filter(x => x[0] === item[0]).map(x => x[1]).concat(item[1])
+            if(this.haveCommonElements(answerCountrysLanguages, itemsOfficialLanguages)){
 
+                return this.replaceObject(answerCountrysLanguages)
+                
+            }
+            else return item
+        })
+        //päivitä choicet
+        this.choices = newChoices.map(choice => choice[choiceIndex])
+        this.choices.splice(this.answer.index, 0, this.answer.name)
+    }
+
+    haveCommonElements(arr1, arr2) { 
+        return arr1.some(item => arr2.includes(item)) 
+    } 
+
+    replaceObject(answerCountrysLanguagesArray) {
+        while(true) {
+            let randomIndex = Math.floor(Math.random() * this.data.length),
+                randomItem = this.data[randomIndex];
+            let allInstances = this.data.filter(x => x[0] === randomItem[0]).map(x => x[1])
+            if(this.haveCommonElements(answerCountrysLanguagesArray, allInstances)){
+                continue
+            } else {
+                return randomItem
+            }
+        }
+    }
+
+
+    reconstructDataSetForTheVariant() {
+        this.data = this.data.map(obj => {
+            let newObj = {}
+            this.variants[this.random].dataset.split(",").forEach((key, i) => {
+                newObj[i] = obj[key]
+            })
+            return newObj
+        })
+    }
+
+    removeUnusedAttributes() {
+        delete this.data
+        delete this.randomizedItems
+        delete this.answerTitle
+        delete this.setCorrectAnswer
+        delete this.choiceFilterer
+        delete this.random
+        delete this.setQuestionTitle
+        delete this.setAnswerTitle
+        delete this.variants
+        delete this.nodeCache
+        delete this.answerObjectsOtherAttribute
+    }
+
+    setCorrectAnswerRandom(indexForAnswer, indexForTitles) {
         const randomItemIndex = Math.floor(Math.random() * this.randomizedItems.length)
         const randomItem = this.randomizedItems[randomItemIndex]
+        this.answerObjectsOtherAttribute = randomItem[indexForTitles]
         this.setQuestionTitle(randomItem[indexForTitles])
         this.setAnswerTitle(randomItem[indexForTitles])
         this.answer = {
@@ -106,22 +122,21 @@ class Question {
             answerTitle: this.answerTitle
         }
     }
-
-    setCorrectAnswerMaxOrMin() {
+    
+    setCorrectAnswerMaxOrMin(minOrMax) {
         this.setQuestionTitle()
-        
         let index = 0
         let helper = {}
-        this.random === 0 ? helper[1] = Infinity : helper[1] = -Infinity
-
-        if(this.random === 0){
+        minOrMax === 0 ? helper[1] = Infinity : helper[1] = -Infinity
+    
+        if(minOrMax === 0){
             this.randomizedItems.forEach((c, i) => {
                 if(parseInt(c[1]) < helper[1]){
                     index = i
                     helper = c
                 }
             })
-        } else if(this.random === 1){
+        } else if(minOrMax === 1){
             this.randomizedItems.forEach((c, i) => {
                 if(parseInt(c[1]) > helper[1]){
                     index = i
@@ -137,113 +152,36 @@ class Question {
             answerTitle: this.answerTitle
         }
     }
-
-    setAnswerTitle(string) {
-        this.answerTitle = this.options.variants[this.random].answerTitle.replace("#", string)
-    }
-
-    setQuestionTitle(string) {
-        this.title = this.options.variants[this.random].questionTitle.replace('#', string)
-    }
-
-    getQuestionTitle() {
-        return this.title
-    }
-
-    removeUnusedAttributes() {
-        delete this.options
-        delete this.filteredData
-        delete this.randomizedItems
-        delete this.answerTitle
-    }
-
-    setOptions(category) {
-        let options = {
-            "officialLanguage": {
-                "choiceCount": 4,
-                "setCorrectAnswer": () => this.setCorrectAnswerRandom(), 
-                "variants": [
-                    {
-                        "questionTitle": 'What is the official language of #',
-                        "answerTitle": 'The Official language of # is '
-                    },
-                    {
-                        "questionTitle": "Which country's official language is #",
-                        "answerTitle": '# is the official language of '
-                    }
-                ]
-            },
-            "capital" : {
-                "choiceCount": 4,
-                "setCorrectAnswer": () => this.setCorrectAnswerRandom(),
-                "variants": [
-                    {
-                        "questionTitle": 'What is the capital of #',
-                        "answerTitle": 'Capital of # is '
-                    },
-                    {
-                        "questionTitle": '# is the capital of ...',
-                        "answerTitle": '# is the capital of '
-                    }
-                ]
-            },
-            "population": {
-                "choiceCount": 3,
-                "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
-                "variants": [
-                    {
-                        "questionTitle": 'Which country has the smallest population',
-                        "answerTitle": 'The smallest population of # is in '
-                    },
-                    {
-                        "questionTitle": 'Which country has the biggest population',
-                        "answerTitle": 'The biggest population of # is in '
-                    }
-                ]
-            }, 
-            "area": {
-                "choiceCount": 3,
-                "setCorrectAnswer": () => this.setCorrectAnswerMaxOrMin(),
-                "variants": [
-                    {
-                        "questionTitle": 'Which country is the smallest by area',
-                        "answerTitle": 'The smallest country with an area of # km² is '
-                    },
-                    {
-                        "questionTitle": 'Which country is the biggest by area',
-                        "answerTitle": 'The biggest country with an area of # km² is '
-                    }
-                ]
+    
+    setCorrectAnswerNearest(){
+        const randomItemIndex = Math.floor(Math.random() * this.randomizedItems.length)
+        const randomItem = this.randomizedItems[randomItemIndex]
+    
+        this.setQuestionTitle(randomItem[0])
+        this.setAnswerTitle(randomItem[0])
+    
+        let smallestDifference = Infinity
+        let answerItem = {}
+        let index
+        let toCompare = randomItem[1]
+        //filtteröidään vastausvaihtoehdoista pois verrokkimaa. Esim. Brasilia, jos kysymys on 'mikä näistä maista on pinta-alaltaan lähinnä Brasiliaa'
+        this.choices = this.choices.filter(c => c !== randomItem[0])
+    
+        this.randomizedItems.filter(c => c[1] !== toCompare).forEach((c, i) => {
+            let difference = (c[1] - toCompare)**2
+            if(difference < smallestDifference){
+                answerItem = c
+                index = i
+                smallestDifference = difference
             }
-        }
-        this.options = options[category]
-        this.options.category = category
-        this.random = Math.floor(Math.random() * this.options.variants.length)
-        this.setQuery()
-    }
-
-    setQuery() {
-        let query
-        switch(this.options.category) {
-            case 'officialLanguage': query = getCountriesWithOfficialLanguages(); break
-            case 'capital': query = getCountriesWithCapitals(); break
-            case 'population': query = getCountriesWithPopulation(); break
-            case 'area': query = getCountriesArea(); break
-
-        }
-        this.options.query = encodeURI(query)
-    }
-
-    get() {
-        return new Promise((res, rej) => {
-            let counter = setInterval(() => {
-                if(this.options.ready) {
-                    clearInterval(counter)
-                    this.removeUnusedAttributes()
-                    res(this)
-                }
-            }, 100)
         })
+    
+        this.answer = {
+            name: answerItem[0],
+            index: index,
+            answerTitle: this.answerTitle
+        }
+    
     }
 }
-module.exports = {Question}
+module.exports = Question

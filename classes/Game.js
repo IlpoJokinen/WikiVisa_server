@@ -1,64 +1,65 @@
-const {Question} = require('./Question')
-let categories = {
-    Geoghraphy: ["area", "population", "officialLanguage", "capital"]
-}
+const QuestionSet = require('./QuestionSet')
 
 module.exports = (io) => class Game {
-
     constructor(properties) {
         this.id = properties.id
+        this.type = properties.type
         this.gameCreator = properties.gameCreator
         this.started = false
         this.roomCode = properties.roomCode
+        this.currentPlayers = 0
         this.startGameCounter = 5
         this.defaults = {
             question: {
-                categories: properties.question.categories.length ? properties.question.categories : categories.Geoghraphy,
-                count: properties.question.count.length ? properties.question.count : 5,
+                categories: properties.question.categories,
+                count: properties.hasOwnProperty('question') && properties.question.hasOwnProperty('count') ? properties.question.count : 5,
             }, 
             counters: {
-                questionCounter: properties.counters.answer.length ? properties.counters.answer : 10,
-                roundEndCounter: properties.counters.roundEnd.length ? properties.counters.roundEnd : 10
+                questionCounter: properties.hasOwnProperty('counters') && properties.counters.hasOwnProperty('answer') ? properties.counters.answer : 10,
+                roundEndCounter: properties.hasOwnProperty('counters') && properties.counters.hasOwnProperty('roundEnd') ? properties.counters.roundEnd : 10
             }, 
-            visibility: properties.visibility,
-            losePoints: properties.losePoints
+            maxPlayers: properties.hasOwnProperty('maxPlayers') ? properties.maxPlayers : properties.type === 'quick' ? 1 : 6,
+            visibility: properties.hasOwnProperty('visibility') ? properties.visibility : false,
+            losePoints: properties.hasOwnProperty('losePoints') ? properties.losePoints : false,
+            pointsForSpeed: properties.hasOwnProperty('pointsForSpeed') ? properties.pointsForSpeed : false
         }
+        this.maxPlayers = this.defaults.maxPlayers
+        this.categories =  this.defaults.question.categories
         this.questionCounter = this.defaults.counters.questionCounter
         this.roundEndCounter = this.defaults.counters.roundEndCounter
-        this.numberOfQuestions= this.defaults.question.count
-        this.visibility = this.defaults.visibility
+        this.numberOfQuestions = this.defaults.question.count
+        this.visibility = properties.type === 'quick' ? false : this.defaults.visibility
         this.losePoints = this.defaults.losePoints
-        this.categories =  this.defaults.question.categories
+        this.pointsForSpeed = this.defaults.pointsForSpeed
         this.questions = []
         this.currentQuestionIndex = 0
         this.view = 1
         this.players = []
         this.correctAnswers = []
-        this.questionsCreated = 0
         this.ready = false
+        this.answerOrder = []
+        this.messages = []
         this.init()
     }
+
     init() {
-        this.getQuestion().then(question => {
-            this.setCorrectAnswer(question)
-            delete question.answer
-            this.questions.push(question)
+        this.getQuestions().then(questions => {
+            questions.forEach(question => {
+                this.setCorrectAnswer(question)
+                delete question.answer
+                this.questions.push(question)
+            })
             this.ready = true
         })
-        setTimeout(() => {
-            if(this.questionsCreated != this.numberOfQuestions){
-                this.init()
-            }
-        }, 1000)
     }
 
     startGame() {
         this.started = true
+        io.in(this.roomCode).emit("game started")
         this.startTimer()
     } 
 
     startTimer() {
-        io.in(this.roomCode).emit("game started")
         let counter = setInterval(() => {
             let currentTime = this.updateGameTime()
             if(currentTime <= 0) {
@@ -110,15 +111,21 @@ module.exports = (io) => class Game {
 
     updateGameViewIndexForClients() {
         if(this.view === 2){
+            this.zeroPointsAddedPropertyOfPlayers()
             this.sendNextQuestion()
         }
-
         io.in(this.roomCode).emit('update game view', this.view)
+    }
+
+    zeroPointsAddedPropertyOfPlayers() {
+        this.players = this.players.map(p => {
+            return {...p, pointsAdded: 0}
+        })
     }
     
     sendNextQuestion(){
         let nextQuestion = this.questions[this.currentQuestionIndex]
-        io.in(this.roomCode).emit("send question", nextQuestion)
+        io.in(this.roomCode).emit("send question", {nextQuestion: nextQuestion, questionIndex: this.currentQuestionIndex + 1})
     }
 
     setCorrectAnswer(question) {
@@ -131,32 +138,36 @@ module.exports = (io) => class Game {
             }
         })
     }
-    getQuestion() {
-        let category = this.getNextCategory()
-        let question = new Question(this.questionsCreated, category)
-        this.questionsCreated++
-        return question.get()
-    }
 
-    getNextCategory() {
-        let randomIndex = Math.floor(Math.random() * this.categories.length),
-        randomCategory = this.categories[randomIndex]
-        return randomCategory
+    getQuestions() {
+        let questions = new QuestionSet(this.categories, this.numberOfQuestions)
+        return questions.get()
     }
-
+    
     checkPointsOfTheRound(){
         const correctAnswerOftheRound = this.getCorrectAnswer()
         this.players.map(p => {
             p.ready = false
             let answerOfThePlayer = this.getAnswerByQuestionId(p.answers, this.currentQuestionIndex)
             if(answerOfThePlayer && answerOfThePlayer.answer.value === correctAnswerOftheRound.value){
-                p.points += 10
+                p.pointsAdded += 10
+                let extraPoints = Math.abs(this.answerOrder.findIndex(obj => obj.gamertag === p.gamertag) - 5)
+                if(extraPoints <= 5 && this.pointsForSpeed) {
+                    p.pointsAdded = 10 + extraPoints
+                    p.points += p.pointsAdded
+                } else {
+                    p.pointsAdded = 10
+                    p.points += p.pointsAdded
+                }
             } else {
+                p.pointsAdded = 0
                 if(this.losePoints && p.points >= 5) {
+                    p.pointsAdded = -5
                     p.points -= 5
                 }
             }
         })
+        this.answerOrder = []
     }
 
     getCorrectAnswer() {
@@ -200,16 +211,8 @@ module.exports = (io) => class Game {
     }
 
     addPlayer(player) {
+        this.currentPlayers++
         this.players.push(player)
-    }
-
-    submitAnswer(data, player) {
-        let existingAnswer = this.getAnswerByQuestionId(player.answers, data.question_id)
-        if(existingAnswer.constructor === Object) {
-            existingAnswer.answer = data.answer // Answer already exists, so we are going to update it
-        } else {
-            player.answers.push(data) // Create a new answer object
-        }
     }
 
     checkIfAllPlayersReady() {
@@ -223,9 +226,10 @@ module.exports = (io) => class Game {
     setAnswerAndPlayerReady(data) {
         let player = this.getPlayerByGametag(data.gamertag, data.roomCode)
         if(player.constructor === Object) {
+            this.handleAnswerOrder(data)
             delete data.gamertag
             delete data.game_id
-            this.submitAnswer(data, player)
+            player.answers.push(data)
             player.ready = true
             if(this.checkIfAllPlayersReady()){
                 this.questionCounter = 0
@@ -233,6 +237,27 @@ module.exports = (io) => class Game {
             const playersWithoutAnswers = this.playersWithoutAnswers()
             io.in(this.roomCode).emit("send players", playersWithoutAnswers)
         }
+    }
+
+    handleAnswerOrder(data) {
+        let correctAnswerOfTheRound = this.getCorrectAnswer()
+        if(correctAnswerOfTheRound.value === data.answer.value){
+            this.answerOrder.push({gamertag: data.gamertag, time: data.time})
+            this.answerOrder = this.answerOrder.sort((a, b) => a.time - b.time)
+            this.answerOrder = this.answerOrder.slice(0, 5)
+        }
+    }
+
+    setPlayerReadyLobby(gamertag) {
+        let player = this.getPlayerByGametag(gamertag)
+        player.lobbyReady = true
+        io.in(this.roomCode).emit("send players", this.players)
+    }
+
+    handleMessage(data) {
+        delete data.game_id
+        this.messages.push(data)
+        io.in(this.roomCode).emit("send messages", this.messages)
     }
 
     gameWithoutCertainAttributes() {
@@ -249,9 +274,9 @@ module.exports = (io) => class Game {
     getAsFindGameItem() {
         return {
             roomCode: this.roomCode,
-            categories: this.categories,
-            maxPlayers: 5,
-            currentPlayers: 1,
+            categories: this.categories.map(category => category.prettyName),
+            maxPlayers: this.maxPlayers,
+            currentPlayers: this.currentPlayers
         }
     }
 
@@ -260,10 +285,13 @@ module.exports = (io) => class Game {
             let counter = setInterval(() => {
                 if(this.ready) {
                     clearInterval(counter)
+                    if(this.type === 'quick'){
+                        this.startGame()
+                    }
                     res(this)
                 }
             }, 100)
         })
     }
     
-}
+}   
