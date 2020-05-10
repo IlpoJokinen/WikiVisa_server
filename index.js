@@ -10,7 +10,8 @@ let game_id = 0
 const { fetchFromDb } = require("./fetchFromDb")
 const { fetchFromWikiData } = require("./fetchWikiData")
 const { nodeCache } = require("./fetchFromDb")
-app.use(express.static('./client'))
+app.use('/', express.static('./client'))
+app.use('/reports', express.static('./reports'))
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", '*')
     next()
@@ -19,7 +20,6 @@ app.get('/api/categories', (req, res) => {
     let categories = nodeCache.get("categories")
     res.send(categories)
 })
-app.use('/reports', express.static('./reports'))
 startServer()
 async function startServer() {
     try {
