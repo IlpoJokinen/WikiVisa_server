@@ -1,5 +1,3 @@
-# WikiVisa_server
+# Project Documentation
 
-Added jenkins to http://server.jaakkouusitalo.fi:8081
-Added new prod branch
-Added Git Webhook
+See the documentation [here](https://github.com/IlpoJokinen/WikiVisa_server/wiki)
