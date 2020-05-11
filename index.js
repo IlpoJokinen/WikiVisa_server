@@ -184,6 +184,7 @@ async function startServer() {
                 roomCode: game.roomCode
             })
             socket.emit("send game", game.gameWithoutCertainAttributes("correctAnswers", "questions"))
+            socket.emit("send messages", game.messages)
             io.in(game.roomCode).emit("send players", game.players)
         })
         socket.on("set ready", data => {
